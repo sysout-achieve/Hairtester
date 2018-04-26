@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Connect</string>
+    <string name="title_activity_submain">SubmainActivity</string>
+    <string name="facebook_app_id">586526598371110</string>
+    <string name="fb_login_protocol_scheme">fb586526598371110</string>
+
+
+</resources>
