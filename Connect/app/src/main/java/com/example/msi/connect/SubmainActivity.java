@@ -18,7 +18,7 @@ public class SubmainActivity extends AppCompatActivity {
 String userID;
 String userName;
 String userAge;
-
+String profile_img_string;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +28,7 @@ String userAge;
         userID = intent.getStringExtra("userID");
         userName = intent.getStringExtra("userName");
         userAge = intent.getStringExtra("userAge")+"";
+        profile_img_string = intent.getStringExtra("profile_img_string");
 
         Button profile_btn = (Button) findViewById(R.id.profile_btn);
 
@@ -37,6 +38,17 @@ String userAge;
                 new BackgroundTask().execute();
             }
         });
+
+        Button btn = (Button) findViewById(R.id.example);
+
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent1 = new Intent(SubmainActivity.this, Main2Activity.class);
+                startActivity(intent1);
+            }
+        });
+
     }
 
     class BackgroundTask extends AsyncTask<Void, Void, String>{
@@ -76,6 +88,7 @@ String userAge;
             intent.putExtra("userID", userID );
             intent.putExtra("userName", userName);
             intent.putExtra("userAge", userAge);
+            intent.putExtra("profile_img_string", profile_img_string);
             SubmainActivity.this.startActivity(intent);
         }
 
