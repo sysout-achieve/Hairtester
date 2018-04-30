@@ -28,7 +28,7 @@ public class Main2Activity extends AppCompatActivity
 
     String userID, userName, userAge, profile_img_string;
     ProgressDialog mDialog;
-    long em;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +40,6 @@ public class Main2Activity extends AppCompatActivity
         //로그인 정보 intent로 get.
         Intent intent = getIntent();
         userID = intent.getStringExtra("userID");
-        if( userID == null ){
-            userID = ""+intent.getLongExtra("longID",0);
-        }
         userName = intent.getStringExtra("userName");
         userAge = intent.getStringExtra("userAge")+"";
         profile_img_string = intent.getStringExtra("profile_img_string");

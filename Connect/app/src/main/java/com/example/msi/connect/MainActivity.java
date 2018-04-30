@@ -312,12 +312,13 @@ public class MainActivity extends AppCompatActivity {
                 mDialog.setMessage("data...");
                 mDialog.show();
                 name1 = userProfile.getNickname();
-                long em = userProfile.getId();
+                email = userProfile.getEmail();
                 //카카오톡 이메일 요청 못함
                 profile_img_string = userProfile.getThumbnailImagePath(); // <- 프로필 작은 이미지 , userProfile.getProfileImagePath() <- 큰 이미지
                 Intent intent = new Intent(MainActivity.this, Main2Activity.class);
-                intent.putExtra("longID", em);
+                intent.putExtra("userID", email);
                 intent.putExtra("userName", name1);
+                intent.putExtra("userAge", birth);
                 intent.putExtra("profile_img_string",profile_img_string);
                 startActivity(intent);
                 finish();
