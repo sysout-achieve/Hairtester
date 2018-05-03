@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class ProfileRequest extends StringRequest {
 
-    final static private String URL = "http://13.125.234.222/new/login.php";
+    final static private String URL = "http://13.125.234.222/new/profile.php";
     private Map<String, String> parameters;
 
     public ProfileRequest(String userID, Response.Listener<String> listener){

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,10 +19,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.toolbox.Volley;
 import com.facebook.login.LoginManager;
 import com.kakao.usermgmt.UserManagement;
 import com.kakao.usermgmt.callback.LogoutResponseCallback;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONObject;
 
 public class Main2Activity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -124,12 +130,65 @@ public class Main2Activity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.myinfo) {
-            Intent intent = new Intent(Main2Activity.this, ProfileActivity.class);
-            intent.putExtra("userID",userID);
-            intent.putExtra("userAge", userAge);
-            intent.putExtra("userName", userName);
-            intent.putExtra("profile_img_string", profile_img_string);
-            startActivity(intent);
+            Response.Listener<String> responseListener = new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    try {
+                        JSONObject jsonResponse = new JSONObject(response);
+                        boolean success = jsonResponse.getBoolean("success");
+
+                        if (success) {
+                            String userID = jsonResponse.getString("userID");
+                            String profile_img_string = jsonResponse.getString("profile_img_string");
+                            String userName = jsonResponse.getString("nickName");
+                            String userAge = jsonResponse.getString("userAge");
+                            String kind_sex = jsonResponse.getString("kind_sex");
+                            String kind_user = jsonResponse.getString("kind_user");
+                            String experience = jsonResponse.getString("experience");
+                            String list = jsonResponse.getString("list");
+                            String place = jsonResponse.getString("place");
+                            String address_str = jsonResponse.getString("address_str");
+                            int checked_designer = jsonResponse.getInt("checked_designer");
+
+                            Intent intent = new Intent(Main2Activity.this, ProfileActivity.class);
+                            intent.putExtra("userID", userID);
+                            intent.putExtra("profile_img_string", profile_img_string);
+                            intent.putExtra("userName", userName);
+                            intent.putExtra("userAge", userAge);
+                            intent.putExtra("kind_sex", kind_sex);
+                            intent.putExtra("kind_user", kind_user);
+                            intent.putExtra("experience", experience);
+                            intent.putExtra("list", list);
+                            intent.putExtra("place", place);
+                            intent.putExtra("address_str", address_str);
+                            intent.putExtra("checked_designer", checked_designer);
+                            intent.putExtra("userinfo",true);
+                            startActivity(intent);
+
+                        } else {
+                            Intent intent = new Intent(Main2Activity.this, ProfileActivity.class);
+                            intent.putExtra("userID", userID);
+                            intent.putExtra("profile_img_string", profile_img_string);
+                            intent.putExtra("userName", userName);
+                            intent.putExtra("userAge", userAge);
+                            intent.putExtra("userinfo",false);
+                            startActivity(intent);
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            ProfileRequest profileRequest = new ProfileRequest(userID, responseListener);
+            RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
+            queue.add(profileRequest);
+//            Intent intent = new Intent(Main2Activity.this, ProfileActivity.class);
+//            intent.putExtra("userID",userID);
+//            intent.putExtra("userAge", userAge);
+//            intent.putExtra("userName", userName);
+//            intent.putExtra("profile_img_string", profile_img_string);
+//            startActivity(intent);
         } else if (id == R.id.reservation) {
 
         } else if (id == R.id.visitagain) {
