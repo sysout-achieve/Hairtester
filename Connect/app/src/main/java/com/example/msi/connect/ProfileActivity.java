@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -54,9 +55,7 @@ public class ProfileActivity extends AppCompatActivity {
     int checked_designer;
     Switch fin_profile;
     RadioButton man, woman, staff_btn, customer_btn;
-
-
-
+    Button save_staff, save_customer;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -64,11 +63,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
 
-
-
-
-
-        ImageView profile_img = (ImageView) findViewById(R.id.profile_img);
+        final ImageView profile_img = (ImageView) findViewById(R.id.profile_img);
         showID = (TextView) findViewById(R.id.showID);
         showAge = (TextView) findViewById(R.id.showAge);
         nametxt = (EditText)findViewById(R.id.nicknametxt);
@@ -80,6 +75,8 @@ public class ProfileActivity extends AppCompatActivity {
         addr = (TextView) findViewById(R.id.addr);
         addr_customer = (TextView) findViewById(R.id.addr_customer);
         fin_profile = (Switch) findViewById(R.id.fin_profile);
+        save_staff = (Button)findViewById(R.id.save);
+        save_customer = (Button) findViewById(R.id.save_cus);
 
         RadioGroup sex = (RadioGroup) findViewById(R.id.radioGroup_sex);
         RadioGroup kind = (RadioGroup) findViewById(R.id.radioGroup_kind);
@@ -96,8 +93,6 @@ public class ProfileActivity extends AppCompatActivity {
         /* intent 전달 받음 */
         Intent intent = getIntent();
         boolean userinfo = intent.getBooleanExtra("userinfo", false);
-
-
         if(userinfo){
             profile_img_string = intent.getStringExtra("profile_img_string");
             userID = intent.getStringExtra("userID");
@@ -110,6 +105,31 @@ public class ProfileActivity extends AppCompatActivity {
             place = intent.getStringExtra("place");
             address_str = intent.getStringExtra("address_str");
             checked_designer = intent.getIntExtra("checked_designer", 7);
+            if(kind_sex.equals("man")){
+                man.setChecked(true);
+            } else if(kind_sex.equals("woman")){
+                woman.setChecked(true);
+            }
+            if(kind_user.equals("7")){
+                kind_user = "7";                    // 이 부분 왜 intent 값 7로 받아도 새로 선언해줘야하는지 다시 생각해보자
+                staff_btn.setChecked(true);
+                customer_lay = (TableLayout)findViewById(R.id.customer_lay);
+                staff_lay = (TableLayout)findViewById(R.id.staff_lay);
+                staff_lay.setVisibility(View.VISIBLE);
+                customer_lay.setVisibility(View.GONE);
+                experience.setText(experience_str);
+                experience.setFocusable(false);
+                experience.setClickable(false);
+                sel_method.setText(list_str);
+                place_select.setText(place);
+                addr.setText(address_str);
+                if(experience_str.equals("default")){
+                    experience.setText("");
+                }
+                if(checked_designer == 1){
+                    fin_profile.setChecked(true);
+                }
+            }
         } else {
             profile_img_string = intent.getStringExtra("profile_img_string");
             userID = intent.getStringExtra("userID");
@@ -122,9 +142,98 @@ public class ProfileActivity extends AppCompatActivity {
         showID.setText(userID);
         nametxt.setText(userName);
         showAge.setText(userAge+"");
-        if(profile_img_string != null || profile_img_string != "default"){
+        if(profile_img_string != null && !profile_img_string.equals("default")){
             Picasso.with(this).load(profile_img_string).into(profile_img);
         }
+
+        save_staff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(kind_user == "7"){
+                    String nick_str= nametxt.getText().toString();
+                    String age_str = showAge.getText().toString();
+                    String experience_str = experience.getText().toString();
+                    String place = place_select.getText().toString();
+                    String address_str = addr.getText().toString();
+                    list_str = sel_method.getText().toString();
+                    if(profile_img_string==null){
+                        profile_img_string = "default";
+                    }
+                    Response.Listener<String> responseListener = new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            try {
+                                JSONObject jsonResponse = new JSONObject(response);
+                                boolean success = jsonResponse.getBoolean("success");
+
+                                if(success) {
+                                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(ProfileActivity.this);
+                                    builder.setMessage("프로필을 저장했습니다.")
+                                            .setPositiveButton("확인", null)
+                                            .create()
+                                            .show();
+                                } else {
+                                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(ProfileActivity.this);
+                                    builder.setMessage("프로필 저장에 실패했습니다.")
+                                            .setNegativeButton("확인", null)
+                                            .create()
+                                            .show();
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+                    ProfileSaveRequest profileSaveRequest = new ProfileSaveRequest(userID, profile_img_string, nick_str, age_str, kind_sex, kind_user, experience_str, list_str, place, address_str, checked_designer, responseListener);
+                    RequestQueue queue = Volley.newRequestQueue(ProfileActivity.this);
+                    queue.add(profileSaveRequest);
+                }
+            }
+        });
+        save_customer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(kind_user == "3"){
+                    String nick_str= nametxt.getText().toString();
+                    String age_str = showAge.getText().toString();
+                    String experience_str = experience.getText().toString();
+                    String place = place_select.getText().toString();
+                    String address_str = addr.getText().toString();
+                    list_str = like_style.getText().toString();
+                    if(profile_img_string==null){
+                        profile_img_string = "default";
+                    }
+                    Response.Listener<String> responseListener = new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            try {
+                                JSONObject jsonResponse = new JSONObject(response);
+                                boolean success = jsonResponse.getBoolean("success");
+
+                                if(success) {
+                                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(ProfileActivity.this);
+                                    builder.setMessage("프로필을 저장했습니다.")
+                                            .setPositiveButton("확인", null)
+                                            .create()
+                                            .show();
+                                } else {
+                                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(ProfileActivity.this);
+                                    builder.setMessage("프로필 저장에 실패했습니다.")
+                                            .setNegativeButton("확인", null)
+                                            .create()
+                                            .show();
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+                    ProfileSaveRequest profileSaveRequest = new ProfileSaveRequest(userID, profile_img_string, nick_str, age_str, kind_sex, kind_user, experience_str, list_str, place, address_str, checked_designer, responseListener);
+                    RequestQueue queue = Volley.newRequestQueue(ProfileActivity.this);
+                    queue.add(profileSaveRequest);
+                }
+            }
+        });
 
        fin_profile.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
            @Override
@@ -146,6 +255,15 @@ public class ProfileActivity extends AppCompatActivity {
                 nametxt.setFocusable(true);
             }
         });
+        experience.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                experience.setFocusableInTouchMode(true);
+                experience.setClickable(true);
+                experience.setFocusable(true);
+            }
+        });
+
         //가능한 시술 정보를 저장
         sel_method.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -247,23 +365,23 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
 
-            spinner_man.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                     length = parent.getItemAtPosition(position).toString();
-                }
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {}
-            });
+        spinner_man.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                 length = parent.getItemAtPosition(position).toString();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
-            spinner_woman.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                     length = parent.getItemAtPosition(position).toString();
-                }
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {}
-            });
+        spinner_woman.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                 length = parent.getItemAtPosition(position).toString();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
                 /*남여 분류 끝*/
         // 헤어모델과 스테프에 따라 작성할 정보가 다름
         customer_btn.setOnClickListener(new View.OnClickListener() {
@@ -304,33 +422,6 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if(kind_sex != "man"){
-            man.setChecked(true);
-        } else if(kind_sex == "woman"){
-            woman.setChecked(true);
-        }
-        // 이 부분 확인해야 함 왜 man인데 man을 인식하지 못하는지 확인!!!!!!!!!!!!!!!!!!!!!!!!
-        if(kind_user != "7"){
-            staff_btn.setChecked(true);
-            customer_lay = (TableLayout)findViewById(R.id.customer_lay);
-            staff_lay = (TableLayout)findViewById(R.id.staff_lay);
-            staff_lay.setVisibility(View.VISIBLE);
-            customer_lay.setVisibility(View.GONE);
-            experience.setText(experience_str);
-            experience.setFocusable(false);
-            sel_method.setText(list_str);
-            place_select.setText(place);
-            addr.setText(address_str);
-            if(checked_designer == 1){
-                fin_profile.setChecked(true);
-            }
-        }
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 10 && resultCode == 10){
@@ -344,7 +435,6 @@ public class ProfileActivity extends AppCompatActivity {
             addr_customer.setText(address_mapinfo);
             place_select_customer.setText(address);
         }
-
     }
 
     @Override
@@ -356,7 +446,6 @@ public class ProfileActivity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(false);            //액션바 아이콘을 업 네비게이션 형태로 표시합니다.
         actionBar.setDisplayShowTitleEnabled(false);        //액션바에 표시되는 제목의 표시유무를 설정합니다.
         actionBar.setDisplayShowHomeEnabled(false);            //홈 아이콘을 숨김처리합니다.
-
 
         //layout을 가지고 와서 actionbar에 포팅을 시킵니다.
         LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -375,6 +464,7 @@ public class ProfileActivity extends AppCompatActivity {
                 finish();
             }
         });
+
         btnsave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -385,12 +475,11 @@ public class ProfileActivity extends AppCompatActivity {
                     String experience_str = experience.getText().toString();
                     String place = place_select.getText().toString();
                     String address_str = addr.getText().toString();
+                    list_str = sel_method.getText().toString();
                     if(profile_img_string==null){
                         profile_img_string = "default";
                     }
 //                    checked_designer;
-
-
                             Response.Listener<String> responseListener = new Response.Listener<String>() {
                                 @Override
                                 public void onResponse(String response) {
@@ -416,14 +505,12 @@ public class ProfileActivity extends AppCompatActivity {
                                     }
                                 }
                             };
-                            ProfileSaveRequest profileSaveRequest = new ProfileSaveRequest(userID, profile_img_string, nick_str, age_str, kind_sex, kind_user, experience_str, list.toString(), place, address_str, checked_designer, responseListener);
+                            ProfileSaveRequest profileSaveRequest = new ProfileSaveRequest(userID, profile_img_string, nick_str, age_str, kind_sex, kind_user, experience_str, list_str, place, address_str, checked_designer, responseListener);
                             RequestQueue queue = Volley.newRequestQueue(ProfileActivity.this);
                             queue.add(profileSaveRequest);
                 }
-
             }
         });
-
         return true;
     }
 }
