@@ -6,69 +6,6 @@
     android:layout_height="match_parent"
     tools:context="com.example.msi.connect.ProfileActivity">
 
-    <TextView
-        android:id="@+id/welcomemsg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Profile TEST"
-        android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionMode.Title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="아이디"
-        android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/welcomemsg" />
-
-    <TextView
-        android:id="@+id/showID"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="TextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
-
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="이름"
-        android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/showID" />
-
-    <TextView
-        android:id="@+id/showName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="TextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView4" />
-
     <!--<TextView-->
         <!--android:id="@+id/agetxt"-->
         <!--android:layout_width="wrap_content"-->
@@ -81,28 +18,414 @@
         <!--app:layout_constraintStart_toStartOf="parent"-->
         <!--app:layout_constraintTop_toBottomOf="@+id/showAge" />-->
 
-    <TextView
-        android:id="@+id/showAge"
-        android:layout_width="wrap_content"
-        android:layout_height="16dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="TextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="나이"
-        android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/showName" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/profile_img"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.487"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView2"
+                app:srcCompat="@drawable/com_facebook_profile_picture_blank_square" />
+
+            <EditText
+                android:id="@+id/nicknametxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="120dp"
+                android:layout_marginRight="120dp"
+                android:layout_marginTop="10dp"
+                android:ems="10"
+                android:hint="nickname"
+                android:inputType="textPersonName"
+                android:selectAllOnFocus="false" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/scrollView2">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/textView2"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:layout_marginStart="50dp"
+                                android:layout_marginTop="4dp"
+                                android:layout_weight="1"
+                                android:text="아이디"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/welcomemsg" />
+
+                            <TextView
+                                android:id="@+id/showID"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:layout_weight="1"
+                                android:text="TextView" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/textView23"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:layout_marginStart="50dp"
+                                android:layout_marginTop="4dp"
+                                android:layout_weight="1"
+                                android:text="생년월일"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/welcomemsg" />
+
+                            <TextView
+                                android:id="@+id/showAge"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:layout_weight="1"
+                                android:text="TextView" />
+
+
+                        </LinearLayout>
+
+                        <RadioGroup
+                            android:id="@+id/radioGroup_sex"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/man"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="남자" />
+
+                            <Space
+                                android:layout_width="60dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1" />
+
+                            <RadioButton
+                                android:id="@+id/woman"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="여자" />
+                        </RadioGroup>
+
+                        <RadioGroup
+                            android:id="@+id/radioGroup_kind"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/customer_btn"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="모델" />
+
+                            <Space
+                                android:layout_width="40dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1" />
+
+                            <RadioButton
+                                android:id="@+id/staff_btn"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="디자이너" />
+
+                        </RadioGroup>
+
+                    </LinearLayout>
+                </ScrollView>
+
+                <TableLayout
+                    android:visibility="gone"
+                    android:id="@+id/customer_lay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/textView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="관심 시술"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+                        <TextView
+                            android:id="@+id/like_style"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingLeft="10dp"
+                            android:text="선호 스타일을 선택해주세요"
+                            android:textAlignment="center" />
+
+                    </TableRow>
+
+                    <TableRow
+                        android:visibility="gone"
+                        android:paddingTop="10dp"
+                        android:id="@+id/customer_man"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" >
+
+                        <TextView
+                            android:id="@+id/textView13"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="머리 길이"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+                        <Spinner
+                            android:id="@+id/spinner1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:entries="@array/man"/>
+
+                    </TableRow>
+
+                    <TableRow
+                        android:visibility="gone"
+                        android:paddingTop="10dp"
+                        android:id="@+id/customer_woman"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/textView3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="머리 길이"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+                        <Spinner
+                            android:id="@+id/spinner2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:entries="@array/woman"/>
+
+
+                    </TableRow>
+
+                    <TableRow
+                        android:paddingTop="10dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/textView15"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="지역"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+                        <TextView
+                            android:id="@+id/place_select_customer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="지역을 선택해주세요."
+                            android:textAlignment="center" />
+
+                        <TextView
+                            android:id="@+id/addr_customer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:visibility="gone" />
+
+                    </TableRow>
+                    <LinearLayout
+                        android:paddingTop="80dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" >
+
+
+                        <Button
+                            android:id="@+id/save_cus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="저장하기" />
+                    </LinearLayout>
+
+
+
+                </TableLayout>
+
+                <TableLayout
+                    android:visibility="gone"
+                    android:id="@+id/staff_lay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/textView4"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="경력"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+                        <EditText
+                            android:id="@+id/experience"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:hint="경력을 작성해주세요."
+                            android:inputType="textPersonName" />
+
+                    </TableRow>
+
+
+                    <TableRow
+                        android:paddingTop="10dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" >
+
+                        <TextView
+                            android:id="@+id/textView7"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="시술 정보"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+                        <TextView
+                            android:id="@+id/sel_method"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="가능한 시술 정보를 선택해주세요"
+                            android:textAlignment="center" />
+                    </TableRow>
+
+                    <TableRow
+                        android:paddingTop="10dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/textView5"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="매장정보"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+                        <TextView
+                            android:id="@+id/place_select"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="3"
+                            android:text="매장을 선택해주세요."
+                            android:textAlignment="center" />
+                        <TextView
+                            android:id="@+id/addr"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:visibility="gone" />
+
+                    </TableRow>
+
+                    <TableRow
+                        android:paddingTop="10dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" >
+
+                        <TextView
+                            android:id="@+id/textView6"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="예약 가능 설정"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+                        <Switch
+                            android:id="@+id/fin_profile"
+                            android:layout_gravity="center"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                           />
+                    </TableRow>
+
+                    <LinearLayout
+                        android:paddingTop="30dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" >
+
+
+                        <Button
+                            android:id="@+id/save"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="저장하기" />
+                    </LinearLayout>
+
+
+                </TableLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+
 </android.support.constraint.ConstraintLayout>
