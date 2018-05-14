@@ -4,6 +4,7 @@ package com.example.msi.connect;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,15 +12,18 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
@@ -32,12 +36,16 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
 public class ChatActivity extends AppCompatActivity {
-     EditText mInputMessageView;
+
+    String userID, staffid, username, staffname;
+    EditText mInputMessageView;
     RecyclerView mMessagesView;
     TextView txtvw;
     Button sendbtn;
@@ -55,6 +63,7 @@ public class ChatActivity extends AppCompatActivity {
         try {
             mSocket = IO.socket(ip);
         } catch (URISyntaxException e) {
+
         }
     }
 //    private void attemptSend() {
@@ -67,10 +76,17 @@ public class ChatActivity extends AppCompatActivity {
 //        mSocket.emit("메세지를 입력하세요.", message);
 //    }
     private void addMessage(String message){
-        chatItems.add(new ChatItem(null,message,null));
+        String currentTime = DateFormat.getDateTimeInstance().format(new Date());
+        chatItems.add(new ChatItem(null,message,currentTime,0));
         chatAdapter.notifyItemInserted(chatItems.size());
         scrollToBottom();
+    }
 
+    private void receiveMessage(String message){
+        String currentTime = DateFormat.getDateTimeInstance().format(new Date());
+        chatItems.add(new ChatItem(null, message, currentTime,1));
+        chatAdapter.notifyItemInserted(chatItems.size());
+        scrollToBottom();
     }
 
     private void scrollToBottom() {
@@ -83,6 +99,13 @@ public class ChatActivity extends AppCompatActivity {
         mSocket.connect();
         mSocket.on("message", handleInmcomingMessages);
         setContentView(R.layout.activity_chat);
+
+        Intent intent = getIntent();
+        userID = intent.getStringExtra("userID");
+        username = intent.getStringExtra("userName");
+        staffid = intent.getStringExtra("staffid");
+        staffname = intent.getStringExtra("staffname");
+
         mMessagesView = (RecyclerView) findViewById(R.id.messages);
         sendbtn = (Button) findViewById(R.id.send_btn);
         mInputMessageView = (EditText) findViewById(R.id.message_text);
@@ -109,28 +132,30 @@ public class ChatActivity extends AppCompatActivity {
         mInputMessageView.setText("");
         addMessage(message);
         mSocket.emit("message", message);
+
+
     }
 
-private Emitter.Listener handleInmcomingMessages = new Emitter.Listener() {
-    @Override
-    public void call(final Object... args) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                JSONObject data = (JSONObject) args[0];
-                String message;
-                try{
-                    message = data.getString("message").toString();
-
-                }catch (JSONException e){
-                    return;
+    private Emitter.Listener handleInmcomingMessages = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String message;
+                    String date;
+                    try {
+                        message = data.getString("message").toString();
+                    } catch (JSONException e){
+                        return;
+                    }
+                    receiveMessage(message);
                 }
-                addMessage(message);
-    }
-});
+            });
 
-    }
-};
+        }
+    };
 
 
     @Override
@@ -161,7 +186,20 @@ class chatAdapter extends RecyclerView.Adapter<chatAdapter.ViewHolder>{
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.chatmessage.setText(chatItems.get(position).getchatmessage());
-
+        holder.chatdate.setText(chatItems.get(position).getchattime());
+        if(chatItems.get(position).getCheck_send()==1){
+            holder.chatlayout.setGravity(Gravity.LEFT);
+            holder.chatlayout_inner.setGravity(Gravity.LEFT);
+            holder.chatmessage.setGravity(Gravity.LEFT);
+            holder.chatmessage.setBackgroundResource(R.drawable.receive_msg);
+            holder.receive_img.setVisibility(View.VISIBLE);
+        } else if (chatItems.get(position).getCheck_send()==0) {
+            holder.chatlayout.setGravity(Gravity.RIGHT);
+            holder.chatmessage.setGravity(Gravity.RIGHT);
+            holder.chatlayout_inner.setGravity(Gravity.RIGHT);
+            holder.chatmessage.setBackgroundResource(R.drawable.send_msg);
+            holder.receive_img.setVisibility(View.GONE);
+        }
     }
 
 
@@ -169,12 +207,18 @@ class chatAdapter extends RecyclerView.Adapter<chatAdapter.ViewHolder>{
 
 
         public TextView chatmessage;
-
+        public TextView chatdate;
+        public ImageView receive_img;
+        LinearLayout chatlayout;
+        LinearLayout chatlayout_inner;
         public ViewHolder(View view) {
             super(view);
 
+            chatlayout = (LinearLayout) view.findViewById(R.id.chatlayout);
+            chatlayout_inner = (LinearLayout) view.findViewById(R.id.chatlayout_inner);
             chatmessage = (TextView)view.findViewById(R.id.chatmessage);
-
+            chatdate = (TextView)view.findViewById(R.id.chattime);
+            receive_img = (ImageView) view.findViewById(R.id.receive_img);
         }
     }
 
@@ -189,7 +233,7 @@ class chatAdapter extends RecyclerView.Adapter<chatAdapter.ViewHolder>{
         //아이템을 측정하는 카운터
         return chatItems.size();
     }
-}
+} // chatAdapter fin.
 
 
    /* @Override
