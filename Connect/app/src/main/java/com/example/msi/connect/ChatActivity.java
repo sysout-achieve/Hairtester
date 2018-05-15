@@ -45,6 +45,7 @@ import java.util.List;
 public class ChatActivity extends AppCompatActivity {
 
     String userID, staffid, username, staffname;
+    String chatname, chatid;
     EditText mInputMessageView;
     RecyclerView mMessagesView;
     TextView txtvw;
@@ -58,14 +59,26 @@ public class ChatActivity extends AppCompatActivity {
     private String ip = "http://13.125.234.222:3000";
 
 
-    private Socket mSocket;
+    private static Socket mSocket;
     {
         try {
             mSocket = IO.socket(ip);
+
+
         } catch (URISyntaxException e) {
 
         }
     }
+
+
+
+
+    //
+//    JSONObject parms = new JSONObject();
+//            parms.put("username", username);
+//            parms.put("userid", userID);
+//            parms.put("chatroom", userID+"/"+staffid);
+//            mSocket.emit("login", parms);
 //    private void attemptSend() {
 //        String message = mInputMessageView.getText().toString().trim();
 //        if (TextUtils.isEmpty(message)) {
@@ -93,9 +106,54 @@ public class ChatActivity extends AppCompatActivity {
         mMessagesView.scrollToPosition(chatAdapter.getItemCount()-1);
     }
 
+    static void connectChat(final String user, final String id_user, final String id_staff) {
+        try {
+
+            mSocket.on("connection", new Emitter.Listener() {
+
+                @Override
+                public void call(Object... args) {
+                    System.out.println("PASS HERE");
+                    try {
+                        JSONObject parms = new JSONObject();
+                        parms.put("userid", id_user );
+                        parms.put("username", user);
+                        parms.put("chatroom", id_user+"/"+id_staff);
+                        mSocket.emit("connect_chat", parms);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }).on(id_user+"/"+id_staff, new Emitter.Listener() {
+
+                @Override
+                public void call(Object... args) {
+                    JSONObject obj = (JSONObject) args[0];
+                    System.out.println("PASS HEREZ " + obj);
+                    mSocket.disconnect();
+                }
+
+            }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+
+                @Override
+                public void call(Object... args) {
+                    System.out.println("PASS HEREGG");
+                }
+
+            });
+            mSocket.connect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         mSocket.connect();
         mSocket.on("message", handleInmcomingMessages);
         setContentView(R.layout.activity_chat);
@@ -105,7 +163,7 @@ public class ChatActivity extends AppCompatActivity {
         username = intent.getStringExtra("userName");
         staffid = intent.getStringExtra("staffid");
         staffname = intent.getStringExtra("staffname");
-
+        loginchat(username, userID, staffname);
         mMessagesView = (RecyclerView) findViewById(R.id.messages);
         sendbtn = (Button) findViewById(R.id.send_btn);
         mInputMessageView = (EditText) findViewById(R.id.message_text);
@@ -132,8 +190,17 @@ public class ChatActivity extends AppCompatActivity {
         mInputMessageView.setText("");
         addMessage(message);
         mSocket.emit("message", message);
-
-
+    }
+    private void loginchat(final String user, final String id_user, final String id_staff){
+        try {
+            JSONObject parms = new JSONObject();
+            parms.put("userid", id_user);
+            parms.put("username", user);
+            parms.put("chatroom", id_user+"/"+id_staff);
+            mSocket.emit("connect_chat", parms);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private Emitter.Listener handleInmcomingMessages = new Emitter.Listener() {
@@ -161,7 +228,7 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mSocket.connected();
+        mSocket.disconnect();
     }
 
 
