@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -18,11 +19,11 @@ import org.json.JSONObject;
 
 public class Staff_profile extends AppCompatActivity {
 
-    ImageView staffimg, chatimg, mapimg;
+    ImageView staffimg, chatimg, mapimg, friend_btn, friend_btn2;
     TextView staffname_txt, staffid_txt;
-    String userID, useName, staffid, staffname, place;
+    String userID, userName, staffid, staffname, place;
     //String으로 데이터 할당해둠
-
+    int addcheck;
     String servicelist, address;
 
     @Override
@@ -43,6 +44,8 @@ public class Staff_profile extends AppCompatActivity {
         StaffProfileRequest StaffRequest = new StaffProfileRequest(staffid, responseListener);
         RequestQueue queue = Volley.newRequestQueue(Staff_profile.this);
         queue.add(StaffRequest);
+
+
     }
 
     @Override
@@ -54,16 +57,39 @@ public class Staff_profile extends AppCompatActivity {
         staffid = intent.getStringExtra("staffid");
         staffname = intent.getStringExtra("staffname");
         userID = intent.getStringExtra("userID");
-        useName = intent.getStringExtra("userName");
+        userName = intent.getStringExtra("userName");
 
         staffimg = (ImageView) findViewById(R.id.staff_img);
         chatimg = (ImageView) findViewById(R.id.chat_img);
         mapimg = (ImageView) findViewById(R.id.map_img);
+        friend_btn = (ImageView) findViewById(R.id.friend_btn);
+        friend_btn2 = (ImageView) findViewById(R.id.friend_btn2);
+
         staffid_txt = (TextView) findViewById(R.id.staffid_txt);
         staffname_txt = (TextView) findViewById(R.id.staffname_txt);
 
         staffname_txt.setText(staffname);
         staffid_txt.setText("("+staffid+")");
+
+        Response.Listener<String> responseListener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonResponse = new JSONObject(response);
+
+                        addcheck = jsonResponse.getInt("add");
+                    if(addcheck==1){
+                        friend_btn.setVisibility(View.GONE);
+                        friend_btn2.setVisibility(View.VISIBLE);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        AddfriendRequest addfriendRequest = new AddfriendRequest(userID, staffid, staffname, 0, responseListener);
+        RequestQueue queue = Volley.newRequestQueue(Staff_profile.this);
+        queue.add(addfriendRequest);
 
 
         chatimg.setOnClickListener(new View.OnClickListener() {
@@ -71,7 +97,9 @@ public class Staff_profile extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(Staff_profile.this, ChatActivity.class);
                 intent.putExtra("staffid", staffid);
-                intent.putExtra("userId", userID);
+                intent.putExtra("staffname", staffname);
+                intent.putExtra("userID", userID);
+                intent.putExtra("userName", userName);
                 startActivity(intent);
             }
         });
@@ -87,6 +115,59 @@ public class Staff_profile extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        friend_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Response.Listener<String> responseListener = new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject jsonResponse = new JSONObject(response);
+                            addcheck = jsonResponse.getInt("add");
+
+                                friend_btn.setVisibility(View.GONE);
+                                friend_btn2.setVisibility(View.VISIBLE);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                AddfriendRequest addfriendRequest = new AddfriendRequest(userID, staffid, staffname, 1, responseListener);
+                RequestQueue queue = Volley.newRequestQueue(Staff_profile.this);
+                queue.add(addfriendRequest);
+
+                Toast.makeText(Staff_profile.this, "친구를 추가하셨습니다.", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+        friend_btn2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Response.Listener<String> responseListener = new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject jsonResponse = new JSONObject(response);
+                            addcheck = jsonResponse.getInt("add");
+
+                                friend_btn.setVisibility(View.VISIBLE);
+                                friend_btn2.setVisibility(View.GONE);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                AddfriendRequest addfriendRequest = new AddfriendRequest(userID, staffid, staffname, 1, responseListener);
+                RequestQueue queue = Volley.newRequestQueue(Staff_profile.this);
+                queue.add(addfriendRequest);
+
+                Toast.makeText(Staff_profile.this, "친구를 삭제하셨습니다.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
     private void receiveArray(String dataObject){
         try {
@@ -112,4 +193,20 @@ public class Staff_profile extends AppCompatActivity {
             e1.printStackTrace();
         }
     }
+//
+//    private int receivecheck(String dataObject){
+//        try {
+//            // String 으로 들어온 값 JSONObject 로 1차 파싱
+//            JSONObject wrapObject = new JSONObject(dataObject);
+//            JSONArray jsonArray = new JSONArray(wrapObject.getString("response"));
+//
+//            // Array 에서 하나의 JSONObject 를 추출
+//            JSONObject dataJsonObject = jsonArray.getJSONObject(0);
+//            int addcheck = Integer.parseInt(dataJsonObject.getString("add"));
+//            return addcheck;
+//        } catch (JSONException e1) {
+//            e1.printStackTrace();
+//        }
+//        return 0;
+//    }
 }

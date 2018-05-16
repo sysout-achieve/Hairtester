@@ -95,9 +95,9 @@ public class ChatActivity extends AppCompatActivity {
         scrollToBottom();
     }
 
-    private void receiveMessage(String message){
+    private void receiveMessage(String message, String sendid){
         String currentTime = DateFormat.getDateTimeInstance().format(new Date());
-        chatItems.add(new ChatItem(null, message, currentTime,1));
+        chatItems.add(new ChatItem(sendid, message, currentTime,1));
         chatAdapter.notifyItemInserted(chatItems.size());
         scrollToBottom();
     }
@@ -106,55 +106,13 @@ public class ChatActivity extends AppCompatActivity {
         mMessagesView.scrollToPosition(chatAdapter.getItemCount()-1);
     }
 
-    static void connectChat(final String user, final String id_user, final String id_staff) {
-        try {
-
-            mSocket.on("connection", new Emitter.Listener() {
-
-                @Override
-                public void call(Object... args) {
-                    System.out.println("PASS HERE");
-                    try {
-                        JSONObject parms = new JSONObject();
-                        parms.put("userid", id_user );
-                        parms.put("username", user);
-                        parms.put("chatroom", id_user+"/"+id_staff);
-                        mSocket.emit("connect_chat", parms);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }).on(id_user+"/"+id_staff, new Emitter.Listener() {
-
-                @Override
-                public void call(Object... args) {
-                    JSONObject obj = (JSONObject) args[0];
-                    System.out.println("PASS HEREZ " + obj);
-                    mSocket.disconnect();
-                }
-
-            }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
-
-                @Override
-                public void call(Object... args) {
-                    System.out.println("PASS HEREGG");
-                }
-
-            });
-            mSocket.connect();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
 
-        mSocket.connect();
+//        mSocket.connect();
         mSocket.on("message", handleInmcomingMessages);
         setContentView(R.layout.activity_chat);
 
@@ -163,7 +121,8 @@ public class ChatActivity extends AppCompatActivity {
         username = intent.getStringExtra("userName");
         staffid = intent.getStringExtra("staffid");
         staffname = intent.getStringExtra("staffname");
-        loginchat(username, userID, staffname);
+        insertchat(userID, staffid);
+//        loginchat(username, userID, staffid);
         mMessagesView = (RecyclerView) findViewById(R.id.messages);
         sendbtn = (Button) findViewById(R.id.send_btn);
         mInputMessageView = (EditText) findViewById(R.id.message_text);
@@ -189,15 +148,24 @@ public class ChatActivity extends AppCompatActivity {
         String message = mInputMessageView.getText().toString().trim();
         mInputMessageView.setText("");
         addMessage(message);
-        mSocket.emit("message", message);
+        try{
+            JSONObject data = new JSONObject();
+            data.put("userid", userID);
+            data.put("staffid", staffid);
+            data.put("message", message);
+            mSocket.emit("message", data);
+        } catch (Exception e){
+
+        }
+//        mSocket.emit("message", message);
     }
-    private void loginchat(final String user, final String id_user, final String id_staff){
+    private void insertchat(final String id_user, final String id_staff){
         try {
             JSONObject parms = new JSONObject();
             parms.put("userid", id_user);
-            parms.put("username", user);
-            parms.put("chatroom", id_user+"/"+id_staff);
-            mSocket.emit("connect_chat", parms);
+            parms.put("staffid", id_staff);
+
+            mSocket.emit("insert_chat", parms);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -211,13 +179,14 @@ public class ChatActivity extends AppCompatActivity {
                 public void run() {
                     JSONObject data = (JSONObject) args[0];
                     String message;
-                    String date;
+                    String id;
                     try {
                         message = data.getString("message").toString();
+                        id = data.getString("sendid").toString();
                     } catch (JSONException e){
                         return;
                     }
-                    receiveMessage(message);
+                    receiveMessage(message, id);
                 }
             });
 
@@ -228,7 +197,7 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mSocket.disconnect();
+//        mSocket.disconnect();
     }
 
 
@@ -237,10 +206,7 @@ class chatAdapter extends RecyclerView.Adapter<chatAdapter.ViewHolder>{
 
     private ArrayList<ChatItem> chatItems;
 
-    //    public Adapter(Context context, ArrayList<RecycleItem> stafflist){
-//        this.context = context;
-//        this.stafflist = stafflist;
-//    }
+
     @Override
     public chatAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         //xml 디자인한 부분 적용
@@ -259,6 +225,8 @@ class chatAdapter extends RecyclerView.Adapter<chatAdapter.ViewHolder>{
             holder.chatlayout_inner.setGravity(Gravity.LEFT);
             holder.chatmessage.setGravity(Gravity.LEFT);
             holder.chatmessage.setBackgroundResource(R.drawable.receive_msg);
+            holder.chatid.setText(chatItems.get(position).getchatid());
+            holder.chatid.setVisibility(View.VISIBLE);
             holder.receive_img.setVisibility(View.VISIBLE);
         } else if (chatItems.get(position).getCheck_send()==0) {
             holder.chatlayout.setGravity(Gravity.RIGHT);
@@ -266,6 +234,7 @@ class chatAdapter extends RecyclerView.Adapter<chatAdapter.ViewHolder>{
             holder.chatlayout_inner.setGravity(Gravity.RIGHT);
             holder.chatmessage.setBackgroundResource(R.drawable.send_msg);
             holder.receive_img.setVisibility(View.GONE);
+            holder.chatid.setVisibility(View.GONE);
         }
     }
 
@@ -274,13 +243,14 @@ class chatAdapter extends RecyclerView.Adapter<chatAdapter.ViewHolder>{
 
 
         public TextView chatmessage;
+        public TextView chatid;
         public TextView chatdate;
         public ImageView receive_img;
         LinearLayout chatlayout;
         LinearLayout chatlayout_inner;
         public ViewHolder(View view) {
             super(view);
-
+            chatid = (TextView) view.findViewById(R.id.chatid);
             chatlayout = (LinearLayout) view.findViewById(R.id.chatlayout);
             chatlayout_inner = (LinearLayout) view.findViewById(R.id.chatlayout_inner);
             chatmessage = (TextView)view.findViewById(R.id.chatmessage);
