@@ -23,18 +23,88 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.Volley;
 import com.facebook.login.LoginManager;
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 import com.kakao.usermgmt.UserManagement;
 import com.kakao.usermgmt.callback.LogoutResponseCallback;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.URISyntaxException;
+import java.text.DateFormat;
+import java.util.Date;
 
 public class Main2Activity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     String userID, userName, userAge, profile_img_string;
     ProgressDialog mDialog;
+    TextView rank, style, area;
 
+    private String ip = "http://13.125.234.222:3000";
+    private static Socket mSocket;
+    {
+        try {
+            mSocket = IO.socket(ip);
+
+
+        } catch (URISyntaxException e) {
+
+        }
+    }
+//    private void loginchat(final String userid){
+//        try {
+//
+//
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+    // 채팅이 왔을 때 인식함
+    private Emitter.Listener handleInmcoming_chatlist = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String message;
+                    String sendname;
+                    String sendid;
+                    try {
+                        message = data.getString("message").toString();
+                        sendid = data.getString("sendid").toString();
+                        sendname = data.getString("sendname").toString();
+                    } catch (JSONException e){
+                        return;
+                    }
+                    receiveMessage_chatroom( sendid, sendname, message, 1, userID);
+                }
+            });
+        }
+    };
+    //채팅이 왔을 때 데이터 베이스로 저장
+    private void receiveMessage_chatroom( String sendid, String sendName, String message,int readchk, String userID){
+        Response.Listener<String> responseListener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+            }
+        };
+        AddchatlistRequest addchatlistRequest = new AddchatlistRequest(sendid, sendName, message, readchk, userID, responseListener);
+        RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
+        queue.add(addchatlistRequest);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mSocket.disconnect();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +112,7 @@ public class Main2Activity extends AppCompatActivity
         setContentView(R.layout.activity_main2);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        mSocket.connect();
 
         //로그인 정보 intent로 get.
         Intent intent = getIntent();
@@ -50,6 +121,23 @@ public class Main2Activity extends AppCompatActivity
         userAge = intent.getStringExtra("userAge")+"";
         profile_img_string = intent.getStringExtra("profile_img_string");
 
+        rank = (TextView) findViewById(R.id.rank);
+        style = (TextView) findViewById(R.id.style);
+        area = (TextView) findViewById(R.id.area);
+
+
+        mSocket.on("message", handleInmcoming_chatlist);
+        mSocket.emit("connect_room", userID);
+
+        rank.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Main2Activity.this, Find_staffActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("userName", userName);
+                startActivity(intent);
+            }
+        });
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -190,7 +278,10 @@ public class Main2Activity extends AppCompatActivity
 //            intent.putExtra("profile_img_string", profile_img_string);
 //            startActivity(intent);
         } else if (id == R.id.reservation) {
-
+            Intent intent = new Intent(Main2Activity.this, ChatlistActivity.class);
+            intent.putExtra("userID", userID);
+            intent.putExtra("userName", userName);
+            startActivity(intent);
         } else if (id == R.id.visitagain) {
 
         } else if (id == R.id.review) {
