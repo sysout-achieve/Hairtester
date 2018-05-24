@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +26,7 @@ public class Staff_profile extends AppCompatActivity {
     //String으로 데이터 할당해둠
     int addcheck;
     String servicelist, address;
+    Button showroom;
 
     @Override
     protected void onStart() {
@@ -44,8 +46,6 @@ public class Staff_profile extends AppCompatActivity {
         StaffProfileRequest StaffRequest = new StaffProfileRequest(staffid, responseListener);
         RequestQueue queue = Volley.newRequestQueue(Staff_profile.this);
         queue.add(StaffRequest);
-
-
     }
 
     @Override
@@ -59,6 +59,8 @@ public class Staff_profile extends AppCompatActivity {
         userID = intent.getStringExtra("userID");
         userName = intent.getStringExtra("userName");
 
+        showroom = (Button) findViewById(R.id.floatingActionButton2);
+
         staffimg = (ImageView) findViewById(R.id.staff_img);
         chatimg = (ImageView) findViewById(R.id.chat_img);
         mapimg = (ImageView) findViewById(R.id.map_img);
@@ -70,6 +72,10 @@ public class Staff_profile extends AppCompatActivity {
 
         staffname_txt.setText(staffname);
         staffid_txt.setText("("+staffid+")");
+        if(staffid == userID){
+            chatimg.setVisibility(View.GONE);
+            friend_btn.setVisibility(View.GONE);
+        }
 
         Response.Listener<String> responseListener = new Response.Listener<String>() {
             @Override
@@ -91,6 +97,15 @@ public class Staff_profile extends AppCompatActivity {
         RequestQueue queue = Volley.newRequestQueue(Staff_profile.this);
         queue.add(addfriendRequest);
 
+        showroom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Staff_profile.this, Addshowroom.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("userName", userName);
+                startActivityForResult(intent, 1);
+            }
+        });
 
         chatimg.setOnClickListener(new View.OnClickListener() {
             @Override
