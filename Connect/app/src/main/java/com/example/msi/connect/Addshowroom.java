@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -19,9 +20,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -34,6 +37,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -42,6 +46,7 @@ import java.util.Date;
 
 public class Addshowroom extends AppCompatActivity {
 
+    EditText content_txt;
     TextView id_txt;
     ImageView camera, album, picture_img;
     String userID;
@@ -134,7 +139,7 @@ public class Addshowroom extends AppCompatActivity {
         album = (ImageView) findViewById(R.id.select_image);
         id_txt = (TextView) findViewById(R.id.id_txt);
         picture_img = (ImageView) findViewById(R.id.picture_img);
-
+        content_txt = (EditText) findViewById(R.id.editText);
         id_txt.setText(userID);
 
         requirePermission();
@@ -145,11 +150,21 @@ public class Addshowroom extends AppCompatActivity {
             }
         });
     }
+
+    public String BitMapToString(Bitmap bitmap){
+        ByteArrayOutputStream baos=new  ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
+        byte [] b=baos.toByteArray();
+        String temp= Base64.encodeToString(b, Base64.DEFAULT);
+        return temp;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == camera_code && resultCode == RESULT_OK){
-            picture_img.setImageBitmap( rotateImg(BitmapFactory.decodeFile(mCurrentPhotoPath),270));
+            picture_img.setImageBitmap( rotateImg(BitmapFactory.decodeFile(mCurrentPhotoPath),90));
             picture_img.setVisibility(View.VISIBLE);
+
         }
 //        if(requestCode == gallery_code && resultCode == RESULT_OK){
 //            Uri uri = data.getData();
@@ -189,7 +204,34 @@ public class Addshowroom extends AppCompatActivity {
         btnsave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String content = content_txt.getText().toString();
+                Bitmap bitmap = ((BitmapDrawable) picture_img.getDrawable()).getBitmap();
+                Bitmap resized = Bitmap.createScaledBitmap(bitmap, 100, 150, true);
+                String img = BitMapToString(resized);
 
+                Response.Listener<String> responseListener = new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject jsonResponse = new JSONObject(response);
+                            boolean success = jsonResponse.getBoolean("success");
+
+                            if(success) {
+                                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(Addshowroom.this);
+                                builder.setMessage("글을 등록했습니다.")
+                                        .setPositiveButton("확인", null)
+                                        .create()
+                                        .show();
+                                finish();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                AddpictureRequest addpictureRequest = new AddpictureRequest(userID, content, img, responseListener);
+                RequestQueue queue = Volley.newRequestQueue(Addshowroom.this);
+                queue.add(addpictureRequest);
             }
         });
         return true;

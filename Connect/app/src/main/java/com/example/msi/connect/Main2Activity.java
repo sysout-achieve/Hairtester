@@ -64,7 +64,10 @@ public class Main2Activity extends AppCompatActivity
 //            e.printStackTrace();
 //        }
 //    }
+
     // 채팅이 왔을 때 인식함
+
+    /* 삭제 가능 발표 후 검토 예정*/
     private Emitter.Listener handleInmcoming_chatlist = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -82,11 +85,12 @@ public class Main2Activity extends AppCompatActivity
                     } catch (JSONException e){
                         return;
                     }
-                    receiveMessage_chatroom( sendid, sendname, message, 1, userID);
+//                    receiveMessage_chatroom( sendid, sendname, message, 1, userID);
                 }
             });
         }
     };
+
     //채팅이 왔을 때 데이터 베이스로 저장
     private void receiveMessage_chatroom( String sendid, String sendName, String message,int readchk, String userID){
         Response.Listener<String> responseListener = new Response.Listener<String>() {
@@ -99,6 +103,7 @@ public class Main2Activity extends AppCompatActivity
         RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
         queue.add(addchatlistRequest);
     }
+        /*-------------발표 후 검토 fin.--------------*/
 
     @Override
     protected void onDestroy() {
@@ -283,7 +288,12 @@ public class Main2Activity extends AppCompatActivity
             intent.putExtra("userName", userName);
             startActivity(intent);
         } else if (id == R.id.visitagain) {
-
+            Intent intent = new Intent(Main2Activity.this, Staff_profile.class);
+            intent.putExtra("userID", userID);
+            intent.putExtra("userName", userName);
+            intent.putExtra("staffid", userID);
+            intent.putExtra("staffname", userName);
+            startActivity(intent);
         } else if (id == R.id.review) {
 
         } else if (id == R.id.settings) {
