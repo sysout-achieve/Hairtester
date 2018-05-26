@@ -1,6 +1,7 @@
 package com.example.msi.connect;
 
 import android.content.Intent;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -26,7 +27,7 @@ public class Staff_profile extends AppCompatActivity {
     //String으로 데이터 할당해둠
     int addcheck;
     String servicelist, address;
-    Button showroom;
+    FloatingActionButton showroom;
 
     @Override
     protected void onStart() {
@@ -59,7 +60,7 @@ public class Staff_profile extends AppCompatActivity {
         userID = intent.getStringExtra("userID");
         userName = intent.getStringExtra("userName");
 
-        showroom = (Button) findViewById(R.id.floatingActionButton2);
+        showroom = (FloatingActionButton) findViewById(R.id.floatingActionButton2);
 
         staffimg = (ImageView) findViewById(R.id.staff_img);
         chatimg = (ImageView) findViewById(R.id.chat_img);
@@ -75,6 +76,7 @@ public class Staff_profile extends AppCompatActivity {
         if(staffid == userID){
             chatimg.setVisibility(View.GONE);
             friend_btn.setVisibility(View.GONE);
+            showroom.setVisibility(View.VISIBLE);
         }
 
         Response.Listener<String> responseListener = new Response.Listener<String>() {
