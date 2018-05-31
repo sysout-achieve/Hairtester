@@ -49,14 +49,24 @@ public class Addshowroom extends AppCompatActivity {
     EditText content_txt;
     TextView id_txt;
     ImageView camera, album, picture_img;
+    ImageView rotate_btn;
     String userID;
     private String mCurrentPhotoPath;
     int camera_code = 0;
+    int gallery_code = 11;
+    int mDegree = 90;
 
     public Bitmap rotateImg(Bitmap bitmap, float degree){
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
         return Bitmap.createBitmap(bitmap, 0,0, bitmap.getWidth(),bitmap.getHeight(),matrix,true);
+    }
+
+    void pickPickure(){
+        Intent intent = new Intent(android.content.Intent.ACTION_PICK);
+        intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+        intent.setType("image/*");
+        startActivityForResult(intent, gallery_code);
     }
 
     private File createImageFile() throws IOException { //https://developer.android.com/training/camera/photobasics.html 라이브러리 이용
@@ -69,7 +79,6 @@ public class Addshowroom extends AppCompatActivity {
                 ".jpg",   /* suffix */
                 storageDir      /* directory */
         );
-
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
         return image;
@@ -87,20 +96,16 @@ public class Addshowroom extends AppCompatActivity {
         if(!listPermissionsNeeded.isEmpty()){        //권한을 요청함
             ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),1);
         }
-
     }
 
     private void dialog(final View context){
         AlertDialog.Builder builder = new AlertDialog.Builder(Addshowroom.this);
         builder.setTitle("카메라 선택");
-
         builder.setNegativeButton("촬영(일반)", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
                 boolean camera = ContextCompat.checkSelfPermission(context.getContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
                 boolean write = ContextCompat.checkSelfPermission(context.getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-
                 if (camera && write) {
                     Intent intent_camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     try {
@@ -118,9 +123,7 @@ public class Addshowroom extends AppCompatActivity {
         builder.setPositiveButton("촬영(얼굴 가리기)", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
                 Intent intent = new Intent(getApplicationContext(), Newcamera.class);
-
                 startActivityForResult(intent, 20);
             }
         });
@@ -134,12 +137,13 @@ public class Addshowroom extends AppCompatActivity {
 
         Intent intent = getIntent();
         userID = intent.getStringExtra("userID");
-
         camera = (ImageView) findViewById(R.id.camera);
         album = (ImageView) findViewById(R.id.select_image);
         id_txt = (TextView) findViewById(R.id.id_txt);
         picture_img = (ImageView) findViewById(R.id.picture_img);
         content_txt = (EditText) findViewById(R.id.editText);
+        rotate_btn = (ImageView) findViewById(R.id.rotate_btn);
+
         id_txt.setText(userID);
 
         requirePermission();
@@ -147,6 +151,20 @@ public class Addshowroom extends AppCompatActivity {
             @Override
             public void onClick(final View v) {
                 dialog(v);
+            }
+        });
+        album.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pickPickure();
+            }
+        });
+
+        rotate_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               Bitmap bitmap = ((BitmapDrawable) picture_img.getDrawable()).getBitmap();
+               picture_img.setImageBitmap(rotateImg(bitmap,mDegree));
             }
         });
     }
@@ -164,7 +182,12 @@ public class Addshowroom extends AppCompatActivity {
         if(requestCode == camera_code && resultCode == RESULT_OK){
             picture_img.setImageBitmap( rotateImg(BitmapFactory.decodeFile(mCurrentPhotoPath),90));
             picture_img.setVisibility(View.VISIBLE);
-
+            rotate_btn.setVisibility(View.VISIBLE);
+        } else if (requestCode == gallery_code && resultCode == RESULT_OK){
+            Uri uri = data.getData();
+            picture_img.setImageURI(uri);
+            picture_img.setVisibility(View.VISIBLE);
+            rotate_btn.setVisibility(View.VISIBLE);
         }
 //        if(requestCode == gallery_code && resultCode == RESULT_OK){
 //            Uri uri = data.getData();
@@ -176,25 +199,21 @@ public class Addshowroom extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         ActionBar actionBar = getSupportActionBar();
-
         // Custom Actionbar를 사용하기 위해 CustomEnabled을 true 시키고 필요 없는 것은 false 시킨다
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(false);            //액션바 아이콘을 업 네비게이션 형태로 표시합니다.
         actionBar.setDisplayShowTitleEnabled(false);        //액션바에 표시되는 제목의 표시유무를 설정합니다.
         actionBar.setDisplayShowHomeEnabled(false);            //홈 아이콘을 숨김처리합니다.
-
         //layout을 가지고 와서 actionbar에 포팅을 시킵니다.
         LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
         View actionbar = inflater.inflate(R.layout.showroom_actionbar, null);
-
         actionBar.setCustomView(actionbar);
-
         //액션바 양쪽 공백 없애기
         Toolbar parent = (Toolbar)actionbar.getParent();
         parent.setContentInsetsAbsolute(0,0);
         ImageButton btnsave = (ImageButton)findViewById(R.id.btnsave_showroom);
-        ImageButton bactbtn = (ImageButton)findViewById(R.id.btnBack_showroom);
-        bactbtn.setOnClickListener(new View.OnClickListener() {
+        ImageButton backbtn = (ImageButton)findViewById(R.id.btnBack_showroom);
+        backbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -206,9 +225,8 @@ public class Addshowroom extends AppCompatActivity {
             public void onClick(View v) {
                 String content = content_txt.getText().toString();
                 Bitmap bitmap = ((BitmapDrawable) picture_img.getDrawable()).getBitmap();
-                Bitmap resized = Bitmap.createScaledBitmap(bitmap, 100, 150, true);
+                Bitmap resized = Bitmap.createScaledBitmap(bitmap, 300, 350, true);
                 String img = BitMapToString(resized);
-
                 Response.Listener<String> responseListener = new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {

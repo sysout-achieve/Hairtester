@@ -26,6 +26,7 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ public class ChatlistActivity extends AppCompatActivity {
     private String ip = "http://13.125.234.222:3000";
 
     private static Socket mSocket;
+
     {
         try {
             mSocket = IO.socket(ip);
@@ -55,7 +57,7 @@ public class ChatlistActivity extends AppCompatActivity {
         }
     }
 
-    private void receiveArray(String dataObject){
+    private void receiveArray(String dataObject) {
 
         friendslist.clear();
         try {
@@ -64,7 +66,7 @@ public class ChatlistActivity extends AppCompatActivity {
 
             // JSONObject 의 키 "response" 의 값들을 JSONArray 형태로 변환
             JSONArray jsonArray = new JSONArray(wrapObject.getString("response"));
-            for(int i = 0; i < jsonArray.length(); i++){
+            for (int i = 0; i < jsonArray.length(); i++) {
                 // Array 에서 하나의 JSONObject 를 추출
                 JSONObject dataJsonObject = jsonArray.getJSONObject(i);
                 // 추출한 Object 에서 필요한 데이터를 표시할 방법을 정해서 화면에 표시
@@ -79,7 +81,7 @@ public class ChatlistActivity extends AppCompatActivity {
         }
     }
 
-    private void receiveArray_chat(String dataObject){
+    private void receiveArray_chat(String dataObject) {
 
         chatroomlist.clear();
         try {
@@ -88,20 +90,21 @@ public class ChatlistActivity extends AppCompatActivity {
 
             // JSONObject 의 키 "response" 의 값들을 JSONArray 형태로 변환
             JSONArray jsonArray = new JSONArray(wrapObject.getString("response"));
-            for(int i = 0; i < jsonArray.length(); i++){
+            for (int i = 0; i < jsonArray.length(); i++) {
                 // Array 에서 하나의 JSONObject 를 추출
                 JSONObject dataJsonObject = jsonArray.getJSONObject(i);
                 // 추출한 Object 에서 필요한 데이터를 표시할 방법을 정해서 화면에 표시
                 // 필자는 RecyclerView 로 데이터를 표시 함
-                chatroomlist.add(new Chatroomitem(dataJsonObject.getString("roomin"), dataJsonObject.getString("room"),dataJsonObject.getString("recentmsg"), dataJsonObject.getString("time"), dataJsonObject.getInt("readchk") ));
+                chatroomlist.add(new Chatroomitem(dataJsonObject.getString("roomin"), dataJsonObject.getString("room"), dataJsonObject.getString("recentmsg"), dataJsonObject.getString("time"), dataJsonObject.getInt("readchk")));
             }
-            length_chatroom= jsonArray.length();
+            length_chatroom = jsonArray.length();
             // Recycler Adapter 에서 데이터 변경 사항을 체크하라는 함수 호출
             chatlistAdapter.notifyDataSetChanged();
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -206,74 +209,87 @@ public class ChatlistActivity extends AppCompatActivity {
         chatlistAdapter = new chatlistAdapter(chatroomlist);
         chatlistview.setAdapter(chatlistAdapter);
 
-        final GestureDetector gestureDetector = new GestureDetector(ChatlistActivity.this, new GestureDetector.SimpleOnGestureListener()
-        {
+        final GestureDetector gestureDetector = new GestureDetector(ChatlistActivity.this, new GestureDetector.SimpleOnGestureListener() {
             @Override
-            public boolean onSingleTapUp(MotionEvent e){
+            public boolean onSingleTapUp(MotionEvent e) {
                 return true;
             }
         });
 
-        friendsview.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+        friendsview.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), friendsview, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
-            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-                View child = rv.findChildViewUnder(e.getX(), e.getY());
-                TextView tv = (TextView) rv.getChildViewHolder(child).itemView.findViewById(R.id.staff_name_add);
-                TextView staff_id = (TextView) rv.getChildViewHolder(child).itemView.findViewById(R.id.staff_id_add);
-
-                if(child!=null&&gestureDetector.onTouchEvent(e)) {
-                    String staffname = tv.getText().toString();
-                    String staffid = staff_id.getText().toString();
-                    Intent intent = new Intent(ChatlistActivity.this, Staff_profile.class);
-                    intent.putExtra("staffname", staffname);
-                    intent.putExtra("staffid", staffid);
-                    intent.putExtra("userID",userID);
-                    intent.putExtra("userName", userName);
-                    startActivity(intent);
-                }
-                return false;
-            }
-            @Override
-            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-            }
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-            }
-        });
-
-        chatlistview.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-                View child = rv.findChildViewUnder(e.getX(), e.getY());
-                TextView chatroom = (TextView) rv.getChildViewHolder(child).itemView.findViewById(R.id.chatroom_name);
-                TextView joinid = (TextView) rv.getChildViewHolder(child).itemView.findViewById(R.id.joinid);
-
-                if(child!=null&&gestureDetector.onTouchEvent(e)) {
-                    String chatroomid = chatroom.getText().toString();
-                    String joinchatroom = joinid.getText().toString();
-                    Intent intent = new Intent(ChatlistActivity.this, ChatActivity.class);
-                    intent.putExtra("staffname", chatroomid);
-                    intent.putExtra("staffid", joinchatroom);
-                    intent.putExtra("userID",userID);
-                    intent.putExtra("userName", userName);
-                    startActivity(intent);
-                }
-                return false;
+            public void onItemClick(View view, int position) {
+                String getchatid = friendslist.get(position).getchatid();
+                String getchatname = friendslist.get(position).getchatname();
+                Intent intent = new Intent(ChatlistActivity.this, Staff_profile.class);
+                intent.putExtra("staffid", getchatid);
+                intent.putExtra("staffname", getchatname);
+                intent.putExtra("userID", userID);
+                intent.putExtra("userName", userName);
+                startActivity(intent);
             }
 
             @Override
-            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+            public void onLongItemClick(View view, int position) {
+
             }
+        }));
+
+        chatlistview.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), chatlistview, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+            public void onItemClick(View view, int position) {
+                String chatroomid = chatroomlist.get(position).getchatroomid();
+                String joinchatroom = chatroomlist.get(position).getchatroom_in();
+                int not_read = chatroomlist.get(position).getreadchk();
+                Intent intent = new Intent(ChatlistActivity.this, ChatActivity.class);
+                intent.putExtra("staffname", chatroomid);
+                intent.putExtra("staffid", joinchatroom);
+                intent.putExtra("not_read", not_read);
+                intent.putExtra("userID", userID);
+                intent.putExtra("userName", userName);
+                startActivity(intent);
             }
-        });
+
+            @Override
+            public void onLongItemClick(View view, int position) {
+
+            }
+        }));
+//        chatlistview.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+//            @Override
+//            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+//                View child = rv.findChildViewUnder(e.getX(), e.getY());
+//                TextView chatroom = (TextView) rv.getChildViewHolder(child).itemView.findViewById(R.id.chatroom_name);
+//                TextView joinid = (TextView) rv.getChildViewHolder(child).itemView.findViewById(R.id.joinid);
+//                TextView notread = (TextView) rv.getChildViewHolder(child).itemView.findViewById(R.id.readchk);
+//
+//                if(child!=null&&gestureDetector.onTouchEvent(e)) {
+//                    String chatroomid = chatroom.getText().toString();
+//                    String joinchatroom = joinid.getText().toString();
+//                    int not_read = Integer.parseInt(notread.getText().toString().replace(" ",""));
+//                    Intent intent = new Intent(ChatlistActivity.this, ChatActivity.class);
+//                    intent.putExtra("staffname", chatroomid);
+//                    intent.putExtra("staffid", joinchatroom);
+//                    intent.putExtra("not_read", not_read);
+//                    intent.putExtra("userID",userID);
+//                    intent.putExtra("userName", userName);
+//                    startActivity(intent);
+//                }
+//                return false;
+//            }
+//
+//            @Override
+//            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+//            }
+//            @Override
+//            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+//            }
+//        });
     }
 }
 
 
-
-class friendsAdapter extends RecyclerView.Adapter<friendsAdapter.ViewHolder>{
+class friendsAdapter extends RecyclerView.Adapter<friendsAdapter.ViewHolder> {
     Context context;
     private ArrayList<Friendsitem> friendslist;
 
@@ -284,7 +300,7 @@ class friendsAdapter extends RecyclerView.Adapter<friendsAdapter.ViewHolder>{
     @Override
     public friendsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         //xml 디자인한 부분 적용
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.chatlistitem,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.chatlistitem, parent, false);
         ViewHolder vh = new ViewHolder(view);
 
         return vh;
@@ -297,12 +313,12 @@ class friendsAdapter extends RecyclerView.Adapter<friendsAdapter.ViewHolder>{
 
         public ViewHolder(View view) {
             super(view);
-            staffname = (TextView)view.findViewById(R.id.staff_name_add);
-            staff_id = (TextView)view.findViewById(R.id.staff_id_add);
+            staffname = (TextView) view.findViewById(R.id.staff_name_add);
+            staff_id = (TextView) view.findViewById(R.id.staff_id_add);
         }
     }
 
-    public friendsAdapter(ArrayList<Friendsitem> mdataset){
+    public friendsAdapter(ArrayList<Friendsitem> mdataset) {
         friendslist = mdataset;
     }
 
@@ -325,7 +341,7 @@ class friendsAdapter extends RecyclerView.Adapter<friendsAdapter.ViewHolder>{
 }
 
 
-class chatlistAdapter extends RecyclerView.Adapter<chatlistAdapter.ViewHolder>{
+class chatlistAdapter extends RecyclerView.Adapter<chatlistAdapter.ViewHolder> {
     Context context;
     private ArrayList<Chatroomitem> chatroomlist;
 
@@ -336,7 +352,7 @@ class chatlistAdapter extends RecyclerView.Adapter<chatlistAdapter.ViewHolder>{
     @Override
     public chatlistAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         //xml 디자인한 부분 적용
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.chatroomitem,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.chatroomitem, parent, false);
         ViewHolder vh = new ViewHolder(view);
 
         return vh;
@@ -349,15 +365,15 @@ class chatlistAdapter extends RecyclerView.Adapter<chatlistAdapter.ViewHolder>{
 
         public ViewHolder(View view) {
             super(view);
-            chatroomid = (TextView)view.findViewById(R.id.chatroom_name);
-            chatroom_in = (TextView)view.findViewById(R.id.joinid);
-            recentmsg = (TextView)view.findViewById(R.id.recentmsg);
-            readchk = (TextView)view.findViewById(R.id.readchk);
-            timestamp = (TextView)view.findViewById(R.id.timestamp);
+            chatroomid = (TextView) view.findViewById(R.id.chatroom_name);
+            chatroom_in = (TextView) view.findViewById(R.id.joinid);
+            recentmsg = (TextView) view.findViewById(R.id.recentmsg);
+            readchk = (TextView) view.findViewById(R.id.readchk);
+            timestamp = (TextView) view.findViewById(R.id.timestamp);
         }
     }
 
-    public chatlistAdapter(ArrayList<Chatroomitem> mdataset){
+    public chatlistAdapter(ArrayList<Chatroomitem> mdataset) {
         chatroomlist = mdataset;
     }
 
@@ -366,8 +382,15 @@ class chatlistAdapter extends RecyclerView.Adapter<chatlistAdapter.ViewHolder>{
         holder.chatroomid.setText(chatroomlist.get(position).getchatroomid());
         holder.chatroom_in.setText(chatroomlist.get(position).getchatroom_in());
         holder.recentmsg.setText(chatroomlist.get(position).getrecentmsg());
-        holder.readchk.setText(chatroomlist.get(position).getreadchk()+"");
         holder.timestamp.setText(chatroomlist.get(position).gettimestamp());
+        if (chatroomlist.get(position).getreadchk() == 0) {
+            holder.readchk.setVisibility(View.GONE);
+            holder.readchk.setText("  " + chatroomlist.get(position).getreadchk() + "  ");
+        } else {
+            holder.readchk.setVisibility(View.VISIBLE);
+            holder.readchk.setText("  " + chatroomlist.get(position).getreadchk() + "  ");
+        }
+
     }
 
     @Override
