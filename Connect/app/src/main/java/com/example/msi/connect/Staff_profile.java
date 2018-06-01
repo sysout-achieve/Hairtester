@@ -159,10 +159,14 @@ public class Staff_profile extends AppCompatActivity {
                 String text = showroomItems.get(position).gettext();
                 String img = showroomItems.get(position).getimg();
                 String date = showroomItems.get(position).getdate();
+                int heart = showroomItems.get(position).getheart();
+                int num = showroomItems.get(position).getnum();
                 Intent intent = new Intent(Staff_profile.this, ShowroomActivity.class);
                 intent.putExtra("text", text);
                 intent.putExtra("img", img);
                 intent.putExtra("date", date);
+                intent.putExtra("heart", heart);
+                intent.putExtra("num", num);
                 intent.putExtra("staffid", staffid);
                 intent.putExtra("userID", userID);
                 startActivity(intent);
@@ -314,7 +318,7 @@ public class Staff_profile extends AppCompatActivity {
 //                Bitmap bitmap = StringToBitMap(dataJsonObject.getString("img"));
                 // 추출한 Object 에서 필요한 데이터를 표시할 방법을 정해서 화면에 표시
                 // 필자는 RecyclerView 로 데이터를 표시 함             decodeImage(dataJsonObject.getString("img")
-                    showroomItems.add(new ShowroomItem(dataJsonObject.getString("text"), dataJsonObject.getString("img"), dataJsonObject.getString("date")));
+                    showroomItems.add(new ShowroomItem(dataJsonObject.getString("text"), dataJsonObject.getString("img"), dataJsonObject.getString("date"), dataJsonObject.getInt("heart"), dataJsonObject.getInt("num")));
             }
             int length = jsonArray.length();
             // Recycler Adapter 에서 데이터 변경 사항을 체크하라는 함수 호출
