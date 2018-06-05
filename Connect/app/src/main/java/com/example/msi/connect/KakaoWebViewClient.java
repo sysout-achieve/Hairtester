@@ -12,7 +12,6 @@ import android.webkit.WebViewClient;
 public class KakaoWebViewClient extends WebViewClient {
 
     private Activity activity;
-
     public KakaoWebViewClient(Activity activity) {
         this.activity = activity;
     }

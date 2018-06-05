@@ -25,7 +25,9 @@ public class KakaoActivity extends Activity {
         WebSettings settings = mainWebView.getSettings();
         settings.setJavaScriptEnabled(true);
 
-        mainWebView.loadUrl("http://www.iamport.kr/demo");
+
+        mainWebView.loadUrl("http://192.168.111.146/project/new/payment/chart.php?hw_no=344");
+//        mainWebView.loadUrl("http://www.iamport.kr/demo");
     }
 
 
