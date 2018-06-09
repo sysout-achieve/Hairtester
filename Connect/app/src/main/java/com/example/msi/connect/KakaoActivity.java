@@ -9,9 +9,17 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -32,6 +40,8 @@ import cz.msebera.android.httpclient.params.HttpParams;
 import cz.msebera.android.httpclient.util.EncodingUtils;
 import cz.msebera.android.httpclient.util.EntityUtils;
 
+
+
 public class KakaoActivity extends Activity {
 
     public Context mContext;
@@ -39,6 +49,8 @@ public class KakaoActivity extends Activity {
     private final String APP_SCHEME = "iamportkakao://";
     //    String userID;
     WebViewInterface mWebViewInterface;
+    String userID, salename, staffid, phone;
+    int saleprice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,11 +59,11 @@ public class KakaoActivity extends Activity {
         mContext = this.getApplicationContext();
         Intent intent = getIntent();
 
-        String userID = intent.getStringExtra("userID");
-        String salename = intent.getStringExtra("salename");
-        int saleprice = intent.getIntExtra("saleprice", 10000);
-        String staffid = intent.getStringExtra("staffid");
-        String phone = intent.getStringExtra("phone");
+        userID = intent.getStringExtra("userID");
+        salename = intent.getStringExtra("salename");
+        saleprice = intent.getIntExtra("saleprice", 10000);
+        staffid = intent.getStringExtra("staffid");
+        phone = intent.getStringExtra("phone");
         mainWebView = (WebView) findViewById(R.id.mainWebView);
         mainWebView.setWebViewClient(new KakaoWebViewClient(this));
         WebSettings settings = mainWebView.getSettings();
@@ -130,19 +142,33 @@ public class KakaoActivity extends Activity {
                     return false;
                 }
             }
-            if (url.startsWith("app://")) {
-                Intent intent1 = new Intent(KakaoActivity.this, Main2Activity.class);
-                startActivity(intent1);
+            if (url.startsWith("https://service.iamport.kr/payments/success")) {
+                Response.Listener<String> responseListener = new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject jsonResponse = new JSONObject(response);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                PaymentRequest paymentRequest = new PaymentRequest(userID, staffid, salename, phone, saleprice + "", responseListener);
+                RequestQueue queue = Volley.newRequestQueue(KakaoActivity.this);
+                queue.add(paymentRequest);
+            } else if (url.startsWith("https://service.iamport.kr/payments/fail")) {
                 finish();
-            } else if (url.startsWith("cancel://")) {
-                Intent intent1 = new Intent(KakaoActivity.this, Main2Activity.class);
-                startActivity(intent1);
+            } else if (url.startsWith("http://13.125.234.222/new/payment.php?userid")) {
+                Intent intent = new Intent(KakaoActivity.this, Main2Activity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                Toast.makeText(KakaoActivity.this, "구매가 완료되었습니다.", Toast.LENGTH_SHORT).show();
                 finish();
             }
             return false;
         }
 
-        // 실패 salename=%EC%B
         @Override
         public void onPageFinished(WebView view, String url) {
 
