@@ -8,20 +8,25 @@ import android.media.Image;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.text.Layout;
 import android.util.Base64;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -40,10 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Staff_profile extends AppCompatActivity {
-
-    private RecyclerItemClickListener.OnItemClickListener mListener;
-    ImageView staffimg, chatimg, mapimg, friend_btn, friend_btn2, menu_visible, style_visible;
-    TextView staffname_txt, staffid_txt;
+    ImageView staffimg, chatimg, mapimg, friend_btn, friend_btn2, menu_visible, style_visible, review_visible;
+    TextView staffname_txt, staffid_txt, allview_txt, allreview_txt;
     TextView styletxt, menutxt;
     String userID, userName, staffid, staffname, place, salelist;
     //String으로 데이터 할당해둠
@@ -51,18 +54,87 @@ public class Staff_profile extends AppCompatActivity {
     String servicelist, address;
     FloatingActionButton floatbtn, showroom, saleroom;
     private ArrayList<ShowroomItem> showroomItems;
+    RecyclerView recyclerView;
     PicRecyclerAdapter picRecyclerAdapter;
     LinearLayout contain_menu, menu_lay, cut_lay, color_lay, perm_lay, clinic_lay, style_lay, recy_lay;
+    LinearLayout review_lay, content_gonelay, content_lay1, content_lay2, content_lay3;
+    TextView review_title1, review1, review_rat1, reviewid1, review_date1;
 
-    private void viewctrl(LinearLayout view, ImageView imageView){
+
+    private void viewctrl(LinearLayout view, ImageView imageView) {
         int getVisible = view.getVisibility();
-        if(getVisible == View.GONE){
+        if (getVisible == View.GONE) {
             view.setVisibility(View.VISIBLE);
             imageView.setRotation(0);
-        } else if(getVisible ==  View.VISIBLE){
+        } else if (getVisible == View.VISIBLE) {
             view.setVisibility(View.GONE);
             imageView.setRotation(-90);
         }
+    }
+
+    private void fill_review(String title, String content, String id, String rate, String date, TextView titleview, TextView contentview, TextView idview, TextView rateview, TextView dateview, LinearLayout layout){
+        titleview.setText(title);
+        contentview.setText(content);
+        idview.setText(id);
+        rateview.setText(rate);
+        dateview.setText(date);
+        layout.setVisibility(View.VISIBLE);
+    }
+
+    private void receiveArray_review(String dataObject) {
+        try {
+            // String 으로 들어온 값 JSONObject 로 1차 파싱
+            JSONObject wrapObject = new JSONObject(dataObject);
+            // JSONObject 의 키 "response" 의 값들을 JSONArray 형태로 변환
+
+            JSONArray jsonArray = new JSONArray(wrapObject.getString("response"));
+            int length = jsonArray.length();
+            if (length == 1) {
+                length = 1;
+                // 리뷰가 1개 초과면 전체보기 텍스트 보이게 함
+                allreview_txt.setVisibility(View.VISIBLE);
+            } else if (length == 0) {
+                content_gonelay.setVisibility(View.GONE);
+                review_lay.setVisibility(View.GONE);
+            } else {
+                // 리뷰가 1개 이하이면 전체보기 텍스트 안보이게 함
+                allreview_txt.setVisibility(View.GONE);
+            }
+            for (int i = 0; i < length; i++) {
+                // Array 에서 하나의 JSONObject 를 추출
+                JSONObject dataJsonObject = jsonArray.getJSONObject(i);
+                // 추출한 Object 에서 필요한 데이터를 표시할 방법을 정해서 화면에 표시
+                // 필자는 RecyclerView 로 데이터를 표시 함
+                    fill_review(dataJsonObject.getString("review_title"), dataJsonObject.getString("review_content"), dataJsonObject.getString("buyer"),
+                            dataJsonObject.getDouble("rating")+"", dataJsonObject.getString("date"),review_title1, review1, reviewid1, review_rat1,
+                            review_date1, content_lay1);
+            }
+            // Recycler Adapter 에서 데이터 변경 사항을 체크하라는 함수 호출
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void reviewRequest(String userID, String staffid) {
+        Response.Listener<String> responseListener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonResponse = new JSONObject(response);
+                    JSONArray jsonArray = new JSONArray(jsonResponse.getString("response"));
+                    JSONObject dataJsonObject = jsonArray.getJSONObject(0);
+                    String staff = dataJsonObject.getString("staff");
+                    if(staff.equals("true")){
+                            receiveArray_review(jsonResponse.toString());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        StaffCallRequest staffCallRequest = new StaffCallRequest(userID, staffid, responseListener);
+        RequestQueue queue = Volley.newRequestQueue(Staff_profile.this);
+        queue.add(staffCallRequest);
     }
 
     @Override
@@ -102,6 +174,39 @@ public class Staff_profile extends AppCompatActivity {
         PictureCallRequest pictureCallRequest = new PictureCallRequest(staffid, responseListener_picture);
         RequestQueue queue = Volley.newRequestQueue(Staff_profile.this);
         queue.add(pictureCallRequest);
+
+        reviewRequest(userID, staffid);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        ActionBar actionBar = getSupportActionBar();
+
+        // Custom Actionbar를 사용하기 위해 CustomEnabled을 true 시키고 필요 없는 것은 false 시킨다
+        actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(false);            //액션바 아이콘을 업 네비게이션 형태로 표시합니다.
+        actionBar.setDisplayShowTitleEnabled(false);        //액션바에 표시되는 제목의 표시유무를 설정합니다.
+        actionBar.setDisplayShowHomeEnabled(false);            //홈 아이콘을 숨김처리합니다.
+
+        //layout을 가지고 와서 actionbar에 포팅을 시킵니다.
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View actionbar = inflater.inflate(R.layout.staff_actionbar, null);
+
+        actionBar.setCustomView(actionbar);
+
+        //액션바 양쪽 공백 없애기
+        Toolbar parent = (Toolbar) actionbar.getParent();
+        parent.setContentInsetsAbsolute(0, 0);
+        TextView textView = (TextView) findViewById(R.id.title_staff);
+        textView.setText(staffid);
+        ImageButton bactbtn = (ImageButton) findViewById(R.id.btnBack_staff);
+        bactbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        return true;
     }
 
     @Override
@@ -114,13 +219,14 @@ public class Staff_profile extends AppCompatActivity {
         staffname = intent.getStringExtra("staffname");
         userID = intent.getStringExtra("userID");
         userName = intent.getStringExtra("userName");
-        final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         floatbtn = (FloatingActionButton) findViewById(R.id.floatingActionButton2);
         showroom = (FloatingActionButton) findViewById(R.id.floatingActionButton3);
         saleroom = (FloatingActionButton) findViewById(R.id.floatingActionButton4);
         menutxt = (TextView) findViewById(R.id.menutxt);
         styletxt = (TextView) findViewById(R.id.styletxt);
-
+        allview_txt = (TextView) findViewById(R.id.allview_txt);
+        allreview_txt = (TextView) findViewById(R.id.allreview_txt);
 
         staffimg = (ImageView) findViewById(R.id.staff_img);
         chatimg = (ImageView) findViewById(R.id.chat_img);
@@ -129,6 +235,7 @@ public class Staff_profile extends AppCompatActivity {
         friend_btn2 = (ImageView) findViewById(R.id.friend_btn2);
         menu_visible = (ImageView) findViewById(R.id.menu_visible);
         style_visible = (ImageView) findViewById(R.id.style_visible);
+        review_visible = (ImageView) findViewById(R.id.review_visible);
 
         staffid_txt = (TextView) findViewById(R.id.staffid_txt);
         staffname_txt = (TextView) findViewById(R.id.staffname_txt);
@@ -141,6 +248,14 @@ public class Staff_profile extends AppCompatActivity {
         color_lay = (LinearLayout) findViewById(R.id.color_lay);
         perm_lay = (LinearLayout) findViewById(R.id.perm_lay);
         clinic_lay = (LinearLayout) findViewById(R.id.clinic_lay);
+        review_lay = (LinearLayout) findViewById(R.id.review_lay);
+        content_gonelay = (LinearLayout) findViewById(R.id.content_gonelayout);
+        content_lay1 = (LinearLayout) findViewById(R.id.content_lay1);
+        review_title1 = (TextView) findViewById(R.id.review_title1);
+        review1 = (TextView) findViewById(R.id.review1);
+        review_rat1 = (TextView) findViewById(R.id.review_rat1);
+        reviewid1 = (TextView) findViewById(R.id.reviewid1);
+        review_date1 = (TextView) findViewById(R.id.review_date1);
 
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(layoutManager);
@@ -215,6 +330,13 @@ public class Staff_profile extends AppCompatActivity {
             }
         });
 
+        review_lay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewctrl(content_gonelay, review_visible);
+            }
+        });
+
         style_lay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -226,13 +348,13 @@ public class Staff_profile extends AppCompatActivity {
         floatbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(showroom.getVisibility() == View.GONE){
+                if (showroom.getVisibility() == View.GONE) {
                     saleroom.setVisibility(View.VISIBLE);
                     showroom.setVisibility(View.VISIBLE);
                     menutxt.setVisibility(View.VISIBLE);
                     styletxt.setVisibility(View.VISIBLE);
                     floatbtn.setRotation(45);
-                } else if(showroom.getVisibility() == View.VISIBLE){
+                } else if (showroom.getVisibility() == View.VISIBLE) {
                     saleroom.setVisibility(View.GONE);
                     showroom.setVisibility(View.GONE);
                     menutxt.setVisibility(View.GONE);
@@ -241,6 +363,96 @@ public class Staff_profile extends AppCompatActivity {
                 }
             }
         });
+
+        cut_lay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Staff_profile.this, CheckReservActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("staffid", staffid);
+                intent.putExtra("method", "커트");
+                intent.putExtra("price", "1000원");
+                intent.putExtra("time", "30분");
+                intent.putExtra("staffaddress", address);
+                intent.putExtra("staffplace", place);
+                startActivity(intent);
+            }
+        });
+
+        allview_txt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Staff_profile.this, TimelineActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("staffid", staffid);
+                startActivity(intent);
+            }
+        });
+
+        color_lay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Staff_profile.this, CheckReservActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("staffid", staffid);
+                intent.putExtra("method", "염색");
+                intent.putExtra("price", "8000원");
+                intent.putExtra("time", "60분");
+                intent.putExtra("staffaddress", address);
+                intent.putExtra("staffplace", place);
+                startActivity(intent);
+            }
+        });
+
+        perm_lay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Staff_profile.this, CheckReservActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("staffid", staffid);
+                intent.putExtra("method", "펌");
+                intent.putExtra("price", "15000원");
+                intent.putExtra("time", "90분");
+                intent.putExtra("staffaddress", address);
+                intent.putExtra("staffplace", place);
+                startActivity(intent);
+            }
+        });
+
+        clinic_lay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Staff_profile.this, CheckReservActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("staffid", staffid);
+                intent.putExtra("method", "트리트먼트");
+                intent.putExtra("price", "15000원");
+                intent.putExtra("time", "30분");
+                intent.putExtra("staffaddress", address);
+                intent.putExtra("staffplace", place);
+                startActivity(intent);
+            }
+        });
+
+        content_gonelay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Staff_profile.this, ReviewActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("staffid", staffid);
+                startActivity(intent);
+            }
+        });
+        allreview_txt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Staff_profile.this, ReviewActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("staffid", staffid);
+                startActivity(intent);
+            }
+        });
+
 
         showroom.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -259,7 +471,6 @@ public class Staff_profile extends AppCompatActivity {
                 startActivityForResult(intent, 5);
             }
         });
-
 
         chatimg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -333,14 +544,6 @@ public class Staff_profile extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == 5 && resultCode ==5){
-
-        }
-
-    }
-
     private void receiveArray(String dataObject) {
         try {
             // String 으로 들어온 값 JSONObject 로 1차 파싱
@@ -358,21 +561,23 @@ public class Staff_profile extends AppCompatActivity {
             place = dataJsonObject.getString("place");
             address = dataJsonObject.getString("address");
             salelist = dataJsonObject.getString("salelist");
-            checksale(salelist, 0,cut_lay);
-            checksale(salelist, 1,color_lay);
-            checksale(salelist, 2,perm_lay);
-            checksale(salelist, 3,clinic_lay);
+            checksale(salelist, 0, cut_lay);
+            checksale(salelist, 1, color_lay);
+            checksale(salelist, 2, perm_lay);
+            checksale(salelist, 3, clinic_lay);
         } catch (JSONException e1) {
             e1.printStackTrace();
         }
     }
-    private void checksale(String sale, int charat, LinearLayout layout){
-        if(sale.charAt(charat) == 49){
+
+    private void checksale(String sale, int charat, LinearLayout layout) {
+        if (sale.charAt(charat) == 49) {
             layout.setVisibility(View.VISIBLE);
         } else {
             layout.setVisibility(View.GONE);
         }
     }
+
     private void receiveArray_picture(String dataObject) {
         showroomItems.clear();
         try {
@@ -380,12 +585,16 @@ public class Staff_profile extends AppCompatActivity {
             JSONObject wrapObject = new JSONObject(dataObject);
             // JSONObject 의 키 "response" 의 값들을 JSONArray 형태로 변환
             JSONArray jsonArray = new JSONArray(wrapObject.getString("response"));
-            for (int i = 0; i < jsonArray.length(); i++) {
+            int length = jsonArray.length();
+            if (length > 3) {
+                length = 3;
+                allview_txt.setVisibility(View.VISIBLE);
+            }
+            for (int i = 0; i < length; i++) {
                 // Array 에서 하나의 JSONObject 를 추출
                 JSONObject dataJsonObject = jsonArray.getJSONObject(i);
                 showroomItems.add(new ShowroomItem(dataJsonObject.getString("text"), dataJsonObject.getString("img"), dataJsonObject.getString("date"), dataJsonObject.getInt("heart"), dataJsonObject.getInt("num")));
             }
-            int length = jsonArray.length();
             // Recycler Adapter 에서 데이터 변경 사항을 체크하라는 함수 호출
             picRecyclerAdapter.notifyDataSetChanged();
         } catch (JSONException e) {
@@ -393,62 +602,3 @@ public class Staff_profile extends AppCompatActivity {
         }
     }
 }//Staff_profile fin.
-
-
-class PicRecyclerAdapter extends RecyclerView.Adapter<PicRecyclerAdapter.ViewHolder> {
-    private ArrayList<ShowroomItem> showroomItems;
-    Context context;
-
-    @Override
-    public PicRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        int width = parent.getResources().getDisplayMetrics().widthPixels / 3;
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.pictueritem, parent, false);
-        view.setLayoutParams(new LinearLayoutCompat.LayoutParams(width, width));
-        ViewHolder vh = new ViewHolder(view);
-        return vh;
-    }
-
-    public class ViewHolder extends RecyclerView.ViewHolder {
-
-        public ImageView img;
-
-        public ViewHolder(View view) {
-            super(view);
-            img = (ImageView) view.findViewById(R.id.recycleimg);
-        }
-    }
-
-    public PicRecyclerAdapter(ArrayList<ShowroomItem> mdataset) {
-        showroomItems = mdataset;
-    }
-
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.img.setImageBitmap(StringToBitMap(showroomItems.get(position).getimg()));
-    }
-
-    public Bitmap StringToBitMap(String encodedString) { // 스트링으로 받은 이미지를 비트맵으로 다시 변환
-        try {
-            byte[] encodeByte = Base64.decode(encodedString, Base64.DEFAULT);
-            Bitmap bitmap = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
-            return bitmap;
-        } catch (Exception e) {
-            e.getMessage();
-            return null;
-        }
-    }
-
-    @Override
-    public int getItemCount() {
-        return showroomItems.size();
-    }
-}//PicRecyclerAdapter fin.
-
-//public static class RowCell extends RecyclerView.ViewHolder{
-//    public ImageView img;
-//
-//    public RowCell(View itemView) {
-//        super(itemView);
-//        img = (ImageView) itemView.findViewById(R.id.recycleimg);
-//    }
-//}
