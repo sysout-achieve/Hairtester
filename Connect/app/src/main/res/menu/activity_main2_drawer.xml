@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/myinfo"
+            android:icon="@drawable/myinfo"
+            android:title="내 정보 수정" />
+
+        <item
+            android:id="@+id/visitagain"
+            android:icon="@drawable/visitagain"
+            android:title="나의 프로필" />
+        <item
+            android:id="@+id/reservation"
+            android:icon="@drawable/reservation"
+            android:title="대화 목록" />
+        <item
+            android:id="@+id/reserv"
+            android:icon="@drawable/reserved"
+            android:title="구매 목록" />
+        <!--단골 매장 눌렀을 때 예약 목록과 단골 매장 정보 나오게 하자-->
+        <item
+        android:id="@+id/review"
+        android:icon="@drawable/review"
+        android:title="리뷰 관리" />
+    </group>
+
+    <item android:title="">
+        <menu>
+            <item
+                android:id="@+id/settings"
+                android:icon="@drawable/settings"
+                android:title="환경 설정" />
+            <item
+                android:id="@+id/logout"
+                android:icon="@drawable/logout"
+                android:title="로그아웃" />
+        </menu>
+    </item>
+
+</menu>
