@@ -1,10 +1,16 @@
 package com.example.msi.connect;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ClipData;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.design.internal.NavigationMenuItemView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -30,41 +36,33 @@ import com.kakao.usermgmt.UserManagement;
 import com.kakao.usermgmt.callback.LogoutResponseCallback;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Main2Activity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    static MenuItem visitagain;
+
     String userID, userName, userAge, profile_img_string;
     ProgressDialog mDialog;
     TextView rank, style, area;
-
+    SharedPreferences loginID;
     private String ip = "http://13.125.234.222:3000";
     private static Socket mSocket;
     {
         try {
             mSocket = IO.socket(ip);
-
-
         } catch (URISyntaxException e) {
 
         }
     }
-//    private void loginchat(final String userid){
-//        try {
-//
-//
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     // 채팅이 왔을 때 인식함
 
     /* 삭제 가능 발표 후 검토 예정*/
@@ -85,7 +83,7 @@ public class Main2Activity extends AppCompatActivity
                     } catch (JSONException e){
                         return;
                     }
-//                    receiveMessage_chatroom( sendid, sendname, message, 1, userID);
+                    receiveMessage_chatroom( sendid, sendname, message, 1, userID);
                 }
             });
         }
@@ -116,8 +114,11 @@ public class Main2Activity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
         setSupportActionBar(toolbar);
         mSocket.connect();
+        loginID = getSharedPreferences("loginID", MODE_PRIVATE);
+        SharedPreferences.Editor loginIDedit = loginID.edit();
 
         //로그인 정보 intent로 get.
         Intent intent = getIntent();
@@ -125,6 +126,20 @@ public class Main2Activity extends AppCompatActivity
         userName = intent.getStringExtra("userName");
         userAge = intent.getStringExtra("userAge")+"";
         profile_img_string = intent.getStringExtra("profile_img_string");
+
+
+
+        if(userID != null){
+            loginIDedit.putString("loginID", userID).commit();
+            loginIDedit.putString("loginName", userName).commit();
+            loginIDedit.putString("loginAge", userAge).commit();
+            loginIDedit.putString("loginProfile", profile_img_string).commit();
+        } else {
+            userID = loginID.getString("loginID","null");
+            userName = loginID.getString("loginName","null");
+            userAge = loginID.getString("loginAge","null");
+//            profile_img_string = loginID.getString("loginProfile","default");
+        }
 
         rank = (TextView) findViewById(R.id.rank);
         style = (TextView) findViewById(R.id.style);
@@ -162,7 +177,6 @@ public class Main2Activity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
     } //on Create fin.
     private void requestLogout() {
         UserManagement.requestLogout(new LogoutResponseCallback() {
@@ -199,6 +213,12 @@ public class Main2Activity extends AppCompatActivity
         }
         txt_id.setText(userName);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
+
     }
 
     @Override
@@ -283,11 +303,13 @@ public class Main2Activity extends AppCompatActivity
 //            intent.putExtra("profile_img_string", profile_img_string);
 //            startActivity(intent);
         } else if (id == R.id.reservation) {
+
             Intent intent = new Intent(Main2Activity.this, ChatlistActivity.class);
             intent.putExtra("userID", userID);
             intent.putExtra("userName", userName);
             startActivity(intent);
         } else if (id == R.id.visitagain) {
+
             Intent intent = new Intent(Main2Activity.this, Staff_profile.class);
             intent.putExtra("userID", userID);
             intent.putExtra("userName", userName);
@@ -296,7 +318,11 @@ public class Main2Activity extends AppCompatActivity
             startActivity(intent);
         } else if (id == R.id.review) {
 
-        } else if (id == R.id.settings) {
+        } else if (id == R.id.reserv) {
+            Intent intent = new Intent(Main2Activity.this, OrderActivity.class);
+            intent.putExtra("userID", userID);
+            startActivity(intent);
+        }  else if (id == R.id.settings) {
 
         } else if (id == R.id.logout) {
             mDialog = new ProgressDialog(Main2Activity.this);
@@ -314,3 +340,29 @@ public class Main2Activity extends AppCompatActivity
         return true;
     }
 }
+//    Response.Listener<String> responseListener = new Response.Listener<String>() {
+//        @Override
+//        public void onResponse(String response) {
+//            try {
+//                JSONObject jsonResponse = new JSONObject(response);
+//                JSONArray jsonArray = new JSONArray(jsonResponse.getString("response"));
+//                JSONObject dataJsonObject = jsonArray.getJSONObject(0);
+//                String staff = dataJsonObject.getString("staff");
+//                if(staff.equals("true")){
+//                    Intent intent = new Intent(Main2Activity.this, Staff_profile.class);
+//                    intent.putExtra("userID", userID);
+//                    intent.putExtra("userName", userName);
+//                    intent.putExtra("staffid", userID);
+//                    intent.putExtra("staffname", userName);
+//                    startActivity(intent);
+//                } else {
+//                    Toast.makeText(Main2Activity.this, "스텝만 사용 가능합니다.",Toast.LENGTH_SHORT).show();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    };
+//    StaffCallRequest staffCallRequest = new StaffCallRequest(userID, userID, responseListener);
+//    RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
+//                queue.add(staffCallRequest);
