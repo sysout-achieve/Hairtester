@@ -88,28 +88,22 @@ public class Staff_profile extends AppCompatActivity {
             // JSONObject 의 키 "response" 의 값들을 JSONArray 형태로 변환
 
             JSONArray jsonArray = new JSONArray(wrapObject.getString("response"));
-            int length = jsonArray.length();
-            if (length == 1) {
-                length = 1;
-                // 리뷰가 1개 초과면 전체보기 텍스트 보이게 함
-                allreview_txt.setVisibility(View.VISIBLE);
-            } else if (length == 0) {
-                content_gonelay.setVisibility(View.GONE);
-                review_lay.setVisibility(View.GONE);
-            } else {
-                // 리뷰가 1개 이하이면 전체보기 텍스트 안보이게 함
-                allreview_txt.setVisibility(View.GONE);
-            }
-            for (int i = 0; i < length; i++) {
+            JSONObject dataJsonObject = jsonArray.getJSONObject(0);
+            allreview_txt.setVisibility(View.VISIBLE);
+            review_lay.setVisibility(View.VISIBLE);
+            content_gonelay.setVisibility(View.VISIBLE);
+            String title = dataJsonObject.getString("review_title");
+            if (!title.isEmpty() && title!="null" && !title.equals("null")) {
                 // Array 에서 하나의 JSONObject 를 추출
-                JSONObject dataJsonObject = jsonArray.getJSONObject(i);
                 // 추출한 Object 에서 필요한 데이터를 표시할 방법을 정해서 화면에 표시
-                // 필자는 RecyclerView 로 데이터를 표시 함
-                    fill_review(dataJsonObject.getString("review_title"), dataJsonObject.getString("review_content"), dataJsonObject.getString("buyer"),
-                            dataJsonObject.getDouble("rating")+"", dataJsonObject.getString("date"),review_title1, review1, reviewid1, review_rat1,
-                            review_date1, content_lay1);
+                fill_review(dataJsonObject.getString("review_title"), dataJsonObject.getString("review_content"), dataJsonObject.getString("buyer"),
+                        dataJsonObject.getDouble("rating")+"", dataJsonObject.getString("date"),review_title1, review1, reviewid1, review_rat1,
+                        review_date1, content_lay1);
+            } else {
+                allreview_txt.setText("첫 리뷰작성하러 가기");
+                // 리뷰가 1개 이하이면 전체보기 텍스트 안보이게 함
+                content_lay1.setVisibility(View.GONE);
             }
-            // Recycler Adapter 에서 데이터 변경 사항을 체크하라는 함수 호출
         } catch (JSONException e) {
             e.printStackTrace();
         }

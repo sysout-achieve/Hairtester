@@ -19,6 +19,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
@@ -38,10 +41,13 @@ public class ReviewActivity extends AppCompatActivity {
     private ArrayList<ReviewItem> reviewItems;
     ReviewAdapter reviewAdapter;
     RecyclerView review_recy_view;
-
+    TextView rate_scrore, rev_member, review_text;
+    RatingBar ratebar_rev;
+    RelativeLayout relativelay;
+    LinearLayout Linear;
 
     private void receiveArray_review(String dataObject) {
-
+        Double rating = 0.0;
         reviewItems.clear();
         try {
             // String 으로 들어온 값 JSONObject 로 1차 파싱
@@ -49,17 +55,33 @@ public class ReviewActivity extends AppCompatActivity {
 
             // JSONObject 의 키 "response" 의 값들을 JSONArray 형태로 변환
             JSONArray jsonArray = new JSONArray(wrapObject.getString("response"));
-            for (int i = 0; i < jsonArray.length(); i++) {
-                // Array 에서 하나의 JSONObject 를 추출
-                JSONObject dataJsonObject = jsonArray.getJSONObject(i);
-                // 추출한 Object 에서 필요한 데이터를 표시할 방법을 정해서 화면에 표시
-                // 필자는 RecyclerView 로 데이터를 표시 함
-                reviewItems.add(new ReviewItem(dataJsonObject.getString("review_title"), dataJsonObject.getString("review_content"),
-                        dataJsonObject.getDouble("rating"), dataJsonObject.getString("buyer"), dataJsonObject.getString("date")));
+            JSONObject dataJsonObject_autho_check = jsonArray.getJSONObject(0);
+            String check_autho = dataJsonObject_autho_check.getString("review_autho");
+            if(check_autho.equals("true")){
+                write_rebtn.setVisibility(View.VISIBLE);
+                review_text.setVisibility(View.VISIBLE);
             }
 
-            // Recycler Adapter 에서 데이터 변경 사항을 체크하라는 함수 호출
-            reviewAdapter.notifyDataSetChanged();
+            if(jsonArray.length() == 0){
+                relativelay.setBackgroundResource(R.drawable.firstreview);
+                Linear.setVisibility(View.GONE);
+            } else {
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    // Array 에서 하나의 JSONObject 를 추출
+                    JSONObject dataJsonObject = jsonArray.getJSONObject(i);
+                    // 추출한 Object 에서 필요한 데이터를 표시할 방법을 정해서 화면에 표시
+                    // 필자는 RecyclerView 로 데이터를 표시 함
+                    rating = dataJsonObject.getDouble("rating") + rating;
+                    reviewItems.add(new ReviewItem(dataJsonObject.getString("review_title"), dataJsonObject.getString("review_content"),
+                            dataJsonObject.getDouble("rating"), dataJsonObject.getString("buyer"), dataJsonObject.getString("date")));
+                }
+                Double finalrate = Double.valueOf(Math.round(rating * 100 / jsonArray.length())) / 100;
+                rev_member.setText(jsonArray.length() + " 개의 리뷰");
+                rate_scrore.setText(finalrate + "");
+                ratebar_rev.setRating(finalrate.floatValue());
+                // Recycler Adapter 에서 데이터 변경 사항을 체크하라는 함수 호출
+                reviewAdapter.notifyDataSetChanged();
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -83,6 +105,12 @@ public class ReviewActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        reviewRequest(userID, staffid);
+        super.onResume();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_review);
@@ -90,8 +118,14 @@ public class ReviewActivity extends AppCompatActivity {
         Intent intent = getIntent();
         userID = intent.getStringExtra("userID");
         staffid = intent.getStringExtra("staffid");
+        Linear = (LinearLayout) findViewById(R.id.Linear);
+        review_text = (TextView) findViewById(R.id.review_text);
         review_recy_view = (RecyclerView) findViewById(R.id.review_recy_view);
-
+        /*리뷰 탭의 별점 평균, 리뷰 갯수*/
+        rate_scrore = (TextView) findViewById(R.id.rate_score);
+        rev_member = (TextView) findViewById(R.id.rev_member);
+        ratebar_rev = (RatingBar) findViewById(R.id.ratebar_rev);
+        relativelay = (RelativeLayout) findViewById(R.id.relativelay);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         review_recy_view.setLayoutManager(layoutManager);
 
@@ -160,9 +194,10 @@ class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder> {
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView review_title_all, review_all, review_rat_all, reviewid_all, review_date_all;
-
+        ImageView rev_img;
         public ViewHolder(View view) {
             super(view);
+            rev_img = view.findViewById(R.id.rev_img);
             review_title_all = view.findViewById(R.id.review_title_all);
             review_all = view.findViewById(R.id.review_all);
             review_rat_all = view.findViewById(R.id.review_rat_all);
@@ -177,6 +212,7 @@ class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        holder.rev_img.setImageResource(R.drawable.star);
         holder.review_title_all.setText(reviewItems.get(position).getReview_title());
         holder.review_all.setText(reviewItems.get(position).getReview_content());
         holder.review_rat_all.setText(reviewItems.get(position).getReview_rat() + "");
