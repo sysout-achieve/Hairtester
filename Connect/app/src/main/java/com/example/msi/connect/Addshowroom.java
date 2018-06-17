@@ -54,6 +54,7 @@ public class Addshowroom extends AppCompatActivity {
     private String mCurrentPhotoPath;
     int camera_code = 0;
     int gallery_code = 11;
+    int camera_hide = 20;
     int mDegree = 90;
 
     public Bitmap rotateImg(Bitmap bitmap, float degree){
@@ -123,8 +124,8 @@ public class Addshowroom extends AppCompatActivity {
         builder.setPositiveButton("촬영(얼굴 가리기)", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(getApplicationContext(), Newcamera.class);
-                startActivityForResult(intent, 20);
+                Intent intent = new Intent(Addshowroom.this, Newcamera.class);
+                startActivityForResult(intent, camera_hide);
             }
         });
         builder.show();
@@ -153,10 +154,17 @@ public class Addshowroom extends AppCompatActivity {
                 dialog(v);
             }
         });
+
         album.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pickPickure();
+                boolean write = ContextCompat.checkSelfPermission(v.getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+                if (write) {
+                    pickPickure();
+                } else {
+                    Toast.makeText(Addshowroom.this, "앨범에 대한 권한을 얻지 못하였습니다.", Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
 
@@ -188,6 +196,19 @@ public class Addshowroom extends AppCompatActivity {
             picture_img.setImageURI(uri);
             picture_img.setVisibility(View.VISIBLE);
             rotate_btn.setVisibility(View.VISIBLE);
+        } else if(requestCode == camera_hide && resultCode == 20){
+            ImageConvert imageConvert = new ImageConvert();
+            String img = data.getStringExtra("img");
+            picture_img.setImageBitmap(imageConvert.StringToBitMap(img));
+            picture_img.setVisibility(View.VISIBLE);
+            rotate_btn.setVisibility(View.VISIBLE);
+        } else if (requestCode == camera_hide && resultCode == 75) {
+            int rotate_cam = data.getIntExtra("rotate_cam",0);
+            Intent intent = new Intent(Addshowroom.this, Newcamera.class);
+            intent.putExtra("rotate_cam",rotate_cam);
+            startActivityForResult(intent,camera_hide);
+        } else {
+            Toast.makeText(Addshowroom.this, "아무것도 오지 않았어요", Toast.LENGTH_SHORT).show();
         }
 //        if(requestCode == gallery_code && resultCode == RESULT_OK){
 //            Uri uri = data.getData();
@@ -240,6 +261,7 @@ public class Addshowroom extends AppCompatActivity {
                                         .setPositiveButton("확인", null)
                                         .create()
                                         .show();
+                                setResult(RESULT_OK);
                                 finish();
                             }
                         } catch (JSONException e) {
