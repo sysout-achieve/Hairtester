@@ -49,13 +49,14 @@ public class Main2Activity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     static MenuItem visitagain;
-
+    FloatingActionButton fab;
     String userID, userName, userAge, profile_img_string;
     ProgressDialog mDialog;
     TextView rank, style, area;
     SharedPreferences loginID;
     private String ip = "http://13.125.234.222:3000";
     private static Socket mSocket;
+
     {
         try {
             mSocket = IO.socket(ip);
@@ -80,17 +81,17 @@ public class Main2Activity extends AppCompatActivity
                         message = data.getString("message").toString();
                         sendid = data.getString("sendid").toString();
                         sendname = data.getString("sendname").toString();
-                    } catch (JSONException e){
+                    } catch (JSONException e) {
                         return;
                     }
-                    receiveMessage_chatroom( sendid, sendname, message, 1, userID);
+                    receiveMessage_chatroom(sendid, sendname, message, 1, userID);
                 }
             });
         }
     };
 
     //채팅이 왔을 때 데이터 베이스로 저장
-    private void receiveMessage_chatroom( String sendid, String sendName, String message,int readchk, String userID){
+    private void receiveMessage_chatroom(String sendid, String sendName, String message, int readchk, String userID) {
         Response.Listener<String> responseListener = new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -101,7 +102,7 @@ public class Main2Activity extends AppCompatActivity
         RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
         queue.add(addchatlistRequest);
     }
-        /*-------------발표 후 검토 fin.--------------*/
+    /*-------------발표 후 검토 fin.--------------*/
 
     @Override
     protected void onDestroy() {
@@ -124,27 +125,25 @@ public class Main2Activity extends AppCompatActivity
         Intent intent = getIntent();
         userID = intent.getStringExtra("userID");
         userName = intent.getStringExtra("userName");
-        userAge = intent.getStringExtra("userAge")+"";
+        userAge = intent.getStringExtra("userAge") + "";
         profile_img_string = intent.getStringExtra("profile_img_string");
 
 
-
-        if(userID != null){
+        if (userID != null) {
             loginIDedit.putString("loginID", userID).commit();
             loginIDedit.putString("loginName", userName).commit();
             loginIDedit.putString("loginAge", userAge).commit();
             loginIDedit.putString("loginProfile", profile_img_string).commit();
         } else {
-            userID = loginID.getString("loginID","null");
-            userName = loginID.getString("loginName","null");
-            userAge = loginID.getString("loginAge","null");
+            userID = loginID.getString("loginID", "null");
+            userName = loginID.getString("loginName", "null");
+            userAge = loginID.getString("loginAge", "null");
 //            profile_img_string = loginID.getString("loginProfile","default");
         }
 
         rank = (TextView) findViewById(R.id.rank);
         style = (TextView) findViewById(R.id.style);
         area = (TextView) findViewById(R.id.area);
-
 
         mSocket.on("message", handleInmcoming_chatlist);
         mSocket.emit("connect_room", userID);
@@ -158,16 +157,48 @@ public class Main2Activity extends AppCompatActivity
                 startActivity(intent);
             }
         });
+        style.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Main2Activity.this, StylelineActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("userName", userName);
+                startActivity(intent);
+            }
+        });
 
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(Main2Activity.this, Staff_profile.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("userName", userName);
+                intent.putExtra("staffid", userID);
+                intent.putExtra("staffname", userName);
+                startActivity(intent);
             }
         });
+
+        Response.Listener<String> responseListener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonResponse = new JSONObject(response);
+                    JSONArray jsonArray = new JSONArray(jsonResponse.getString("response"));
+                    JSONObject dataJsonObject = jsonArray.getJSONObject(0);
+                    String staff = dataJsonObject.getString("staff");
+                    if (staff.equals("true")) {
+                        fab.setVisibility(View.VISIBLE);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        StaffCallRequest staffCallRequest = new StaffCallRequest(userID, userID, responseListener);
+        RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
+        queue.add(staffCallRequest);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -178,6 +209,7 @@ public class Main2Activity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     } //on Create fin.
+
     private void requestLogout() {
         UserManagement.requestLogout(new LogoutResponseCallback() {
             @Override
@@ -206,9 +238,10 @@ public class Main2Activity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main2, menu);
+//        menu.getItem(R.id.visitagain).setEnabled(true);
         ImageView profile_img = (ImageView) findViewById(R.id.profile_img);
         TextView txt_id = (TextView) findViewById(R.id.id_txt);
-        if(profile_img_string != null){
+        if (profile_img_string != null) {
             Picasso.with(this).load(profile_img_string).into(profile_img);
         }
         txt_id.setText(userName);
@@ -275,7 +308,7 @@ public class Main2Activity extends AppCompatActivity
                             intent.putExtra("place", place);
                             intent.putExtra("address_str", address_str);
                             intent.putExtra("checked_designer", checked_designer);
-                            intent.putExtra("userinfo",true);
+                            intent.putExtra("userinfo", true);
                             startActivity(intent);
 
                         } else {
@@ -284,7 +317,7 @@ public class Main2Activity extends AppCompatActivity
                             intent.putExtra("profile_img_string", profile_img_string);
                             intent.putExtra("userName", userName);
                             intent.putExtra("userAge", userAge);
-                            intent.putExtra("userinfo",false);
+                            intent.putExtra("userinfo", false);
                             startActivity(intent);
 
                         }
@@ -308,22 +341,20 @@ public class Main2Activity extends AppCompatActivity
             intent.putExtra("userID", userID);
             intent.putExtra("userName", userName);
             startActivity(intent);
-        } else if (id == R.id.visitagain) {
-
-            Intent intent = new Intent(Main2Activity.this, Staff_profile.class);
-            intent.putExtra("userID", userID);
-            intent.putExtra("userName", userName);
-            intent.putExtra("staffid", userID);
-            intent.putExtra("staffname", userName);
-            startActivity(intent);
+//        } else if (id == R.id.visitagain) {
+//
+//            Intent intent = new Intent(Main2Activity.this, Staff_profile.class);
+//            intent.putExtra("userID", userID);
+//            intent.putExtra("userName", userName);
+//            intent.putExtra("staffid", userID);
+//            intent.putExtra("staffname", userName);
+//            startActivity(intent);
         } else if (id == R.id.review) {
 
         } else if (id == R.id.reserv) {
             Intent intent = new Intent(Main2Activity.this, OrderActivity.class);
             intent.putExtra("userID", userID);
             startActivity(intent);
-        }  else if (id == R.id.settings) {
-
         } else if (id == R.id.logout) {
             mDialog = new ProgressDialog(Main2Activity.this);
             mDialog.setMessage("Logout...");
@@ -340,29 +371,3 @@ public class Main2Activity extends AppCompatActivity
         return true;
     }
 }
-//    Response.Listener<String> responseListener = new Response.Listener<String>() {
-//        @Override
-//        public void onResponse(String response) {
-//            try {
-//                JSONObject jsonResponse = new JSONObject(response);
-//                JSONArray jsonArray = new JSONArray(jsonResponse.getString("response"));
-//                JSONObject dataJsonObject = jsonArray.getJSONObject(0);
-//                String staff = dataJsonObject.getString("staff");
-//                if(staff.equals("true")){
-//                    Intent intent = new Intent(Main2Activity.this, Staff_profile.class);
-//                    intent.putExtra("userID", userID);
-//                    intent.putExtra("userName", userName);
-//                    intent.putExtra("staffid", userID);
-//                    intent.putExtra("staffname", userName);
-//                    startActivity(intent);
-//                } else {
-//                    Toast.makeText(Main2Activity.this, "스텝만 사용 가능합니다.",Toast.LENGTH_SHORT).show();
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    };
-//    StaffCallRequest staffCallRequest = new StaffCallRequest(userID, userID, responseListener);
-//    RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
-//                queue.add(staffCallRequest);
