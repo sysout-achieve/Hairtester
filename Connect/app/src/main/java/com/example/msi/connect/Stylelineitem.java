@@ -8,14 +8,16 @@ public class Stylelineitem {
     private String date;
     private int heart;
     private int num;
+    private int chk_heart;
 
-    public Stylelineitem(String id, String text, String img, String date, int heart, int num){
+    public Stylelineitem(String id, String text, String img, String date, int heart, int num, int chk_heart){
         this.id = id;
         this.text = text;
         this.img = img;
         this.date = date;
         this.heart = heart;
         this.num = num;
+        this.chk_heart = chk_heart;
     }
 
     public String gettext() {
@@ -35,6 +37,9 @@ public class Stylelineitem {
     }
     public int getnum() {
         return num;
+    }
+    public int getChk_heart() {
+        return chk_heart;
     }
 
 }
