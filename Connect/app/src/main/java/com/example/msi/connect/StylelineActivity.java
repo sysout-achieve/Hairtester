@@ -2,6 +2,7 @@ package com.example.msi.connect;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,15 +26,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class StylelineActivity extends AppCompatActivity {
 
     Spinner array_spin;
-    String userID, userName;
-    String linename = "최신순";
+    static String userID;
+    String userName;
+    String linename;
     int paging_num = 5;
     private ProgressBar progressBar;                // 데이터 로딩중을 표시할 프로그레스바
 
+    SharedPreferences stylelineShared;
     /* linename은 서버에 저장할 정도로 중요한 정보가 아니지만 사용자의 편의성을 위해서 지정했던 정렬 방식을
     기억하는 것이 좋을 것이라고 판단함. SharedPreferences를 이용해서 각 아이디에 해당하는 정보를 저장하기로 함
     다른 기기로 변경 시 어떤 정렬방식을 사용자가 원하는지 알 수 없지만, 중요도가 낮다고 판단함 */
@@ -57,10 +63,10 @@ public class StylelineActivity extends AppCompatActivity {
             }
             // Recycler Adapter 에서 데이터 변경 사항을 체크하라는 함수 호출
             /*
-            * http://isntyet.tistory.com/114 리사이클러뷰 다운 스크롤 페이징 생각 다시 해보자
+             * http://isntyet.tistory.com/114 리사이클러뷰 다운 스크롤 페이징 생각 다시 해보자
              * 아래로 내릴 때마다 모든 항목이 갱신되기때문에 스크롤을 내릴수록(많은 이미지를 볼 수록) 페이징이 갱신 시간이 길어짐
              * 이 부분을 해결해야함
-            * */
+             * */
             stylelineAdaper.notifyDataSetChanged();
             progressBar.setVisibility(View.GONE);
             if (length < paging_num - 2) {
@@ -102,13 +108,21 @@ public class StylelineActivity extends AppCompatActivity {
         recy_styleline = (RecyclerView) findViewById(R.id.recy_styleline);
         array_spin = (Spinner) findViewById(R.id.array_spin);
         progressBar = (ProgressBar) findViewById(R.id.progressbar);
+        stylelineShared = getSharedPreferences("styleline", MODE_PRIVATE);
+        final SharedPreferences.Editor stylelineEditor = stylelineShared.edit();
+        linename = stylelineShared.getString(userID,"최신순");
+        if(linename.equals("최신순")){
+            array_spin.setSelection(0);
+        } else  {
+            array_spin.setSelection(1);
+        }
 
         //Linearlayout manager 사용
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recy_styleline.setLayoutManager(layoutManager);
         //
         stylelineitems = new ArrayList<>();
-        stylelineAdaper = new StylelineAdaper(stylelineitems);
+        stylelineAdaper = new StylelineAdaper(getApplicationContext(),stylelineitems);
         recy_styleline.setAdapter(stylelineAdaper);
 //        serverRequest(userID, linename);
         recy_styleline.setOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -127,7 +141,9 @@ public class StylelineActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 linename = parent.getItemAtPosition(position).toString();
+                progressBar.setVisibility(View.VISIBLE);
                 serverRequest(userID, linename);
+                stylelineEditor.putString(userID, linename).commit();
             }
 
             @Override
@@ -135,6 +151,7 @@ public class StylelineActivity extends AppCompatActivity {
             }
         });
     }
+
 }
 
 class StylelineAdaper extends RecyclerView.Adapter<StylelineAdaper.ViewHolder> {
@@ -142,6 +159,11 @@ class StylelineAdaper extends RecyclerView.Adapter<StylelineAdaper.ViewHolder> {
     Context context;
     private ArrayList<Stylelineitem> stylelineitems;
     ImageConvert imageConvert = new ImageConvert();
+
+    public StylelineAdaper(Context context, ArrayList<Stylelineitem> stylelineitems) {
+        this.stylelineitems = stylelineitems;
+        this.context = context;
+    }
 
     @Override
     public StylelineAdaper.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -167,14 +189,30 @@ class StylelineAdaper extends RecyclerView.Adapter<StylelineAdaper.ViewHolder> {
         }
     }
 
-    public StylelineAdaper(ArrayList<Stylelineitem> mdataset) {
-        stylelineitems = mdataset;
+    public void Requestlike(int num, String writeID, String likeID, int check_upda) {
+        Response.Listener<String> responseListener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+            }
+        };
+        AddlikeRequest addlikeRequest = new AddlikeRequest(num, writeID, likeID, check_upda, responseListener);
+        RequestQueue queue = Volley.newRequestQueue(context);
+        queue.add(addlikeRequest);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.read_text.setText(stylelineitems.get(position).gettext());
         holder.id_txt_read.setText(stylelineitems.get(position).getid());
+        holder.id_txt_read.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String staffid = stylelineitems.get(position).getid();
+                Intent intent = new Intent(context, Staff_profile.class);
+                intent.putExtra("staffid", staffid);
+                context.startActivity(intent);
+            }
+        });
         holder.heart_num.setText(stylelineitems.get(position).getheart() + "");
         holder.read_date.setText(stylelineitems.get(position).getdate());
         holder.read_picture_img.setImageBitmap(imageConvert.StringToBitMap(stylelineitems.get(position).getimg()));
@@ -183,6 +221,22 @@ class StylelineAdaper extends RecyclerView.Adapter<StylelineAdaper.ViewHolder> {
         } else {
             holder.heart.setImageResource(R.drawable.non_heart);
         }
+        holder.heart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                    holder.heart.setImageResource(R.drawable.heart);
+                if (stylelineitems.get(position).getChk_heart() == 1) {
+                    stylelineitems.set(position, new Stylelineitem(stylelineitems.get(position).getid(), stylelineitems.get(position).gettext(), stylelineitems.get(position).getimg(), stylelineitems.get(position).getdate(), stylelineitems.get(position).getheart() - 1, stylelineitems.get(position).getnum(), 0));
+                    holder.heart.setImageResource(R.drawable.non_heart);
+                    holder.heart_num.setText(stylelineitems.get(position).getheart() + "");
+                } else {
+                    stylelineitems.set(position, new Stylelineitem(stylelineitems.get(position).getid(), stylelineitems.get(position).gettext(), stylelineitems.get(position).getimg(), stylelineitems.get(position).getdate(), stylelineitems.get(position).getheart() + 1, stylelineitems.get(position).getnum(), 1));
+                    holder.heart.setImageResource(R.drawable.heart);
+                    holder.heart_num.setText(stylelineitems.get(position).getheart() + "");
+                }
+                Requestlike(stylelineitems.get(position).getnum(), stylelineitems.get(position).getid(),  StylelineActivity.userID , 1 );
+            }
+        });
     }
 
     @Override

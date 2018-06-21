@@ -22,6 +22,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,10 +55,17 @@ public class Main2Activity extends AppCompatActivity
     FloatingActionButton fab;
     String userID, userName, userAge, profile_img_string;
     ProgressDialog mDialog;
-    TextView rank, style, area;
+    TextView rank, style;
     SharedPreferences loginID;
     private String ip = "http://13.125.234.222:3000";
     private static Socket mSocket;
+    ProgressBar mainprogressBar;
+    ScrollView mainView;
+    TextView hotid1, hotid2, hotheart1, hotheart2;
+    TextView all_style, all_designer;
+    TextView designerid1, designerid2;
+    ImageView hotimg1, hotimg2, designerimg1, designerimg2;
+
 
     {
         try {
@@ -116,10 +126,26 @@ public class Main2Activity extends AppCompatActivity
         setContentView(R.layout.activity_main2);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
+        mainprogressBar = (ProgressBar) findViewById(R.id.mainprogressBar);
+        mainView = (ScrollView) findViewById(R.id.mainView);
+
         setSupportActionBar(toolbar);
         mSocket.connect();
         loginID = getSharedPreferences("loginID", MODE_PRIVATE);
         SharedPreferences.Editor loginIDedit = loginID.edit();
+
+        hotid1 = (TextView) findViewById(R.id.hotid1);
+        hotid2 = (TextView) findViewById(R.id.hotid2);
+        hotheart1 = (TextView) findViewById(R.id.hotheart1);
+        hotheart2 = (TextView) findViewById(R.id.hotheart2);
+        designerid1 = (TextView) findViewById(R.id.designerid1);
+        designerid2 = (TextView) findViewById(R.id.designerid2);
+        all_style = (TextView) findViewById(R.id.all_style);
+        all_designer = (TextView) findViewById(R.id.all_designer);
+        hotimg1 = (ImageView) findViewById(R.id.hotimg1);
+        hotimg2 = (ImageView) findViewById(R.id.hotimg2);
+        designerimg1 = (ImageView) findViewById(R.id.designerimg1);
+        designerimg2 = (ImageView) findViewById(R.id.designerimg2);
 
         //로그인 정보 intent로 get.
         Intent intent = getIntent();
@@ -143,7 +169,6 @@ public class Main2Activity extends AppCompatActivity
 
         rank = (TextView) findViewById(R.id.rank);
         style = (TextView) findViewById(R.id.style);
-        area = (TextView) findViewById(R.id.area);
 
         mSocket.on("message", handleInmcoming_chatlist);
         mSocket.emit("connect_room", userID);
@@ -329,28 +354,17 @@ public class Main2Activity extends AppCompatActivity
             ProfileRequest profileRequest = new ProfileRequest(userID, responseListener);
             RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
             queue.add(profileRequest);
-//            Intent intent = new Intent(Main2Activity.this, ProfileActivity.class);
-//            intent.putExtra("userID",userID);
-//            intent.putExtra("userAge", userAge);
-//            intent.putExtra("userName", userName);
-//            intent.putExtra("profile_img_string", profile_img_string);
-//            startActivity(intent);
-        } else if (id == R.id.reservation) {
 
+        } else if (id == R.id.reservation) {
             Intent intent = new Intent(Main2Activity.this, ChatlistActivity.class);
             intent.putExtra("userID", userID);
             intent.putExtra("userName", userName);
             startActivity(intent);
-//        } else if (id == R.id.visitagain) {
-//
-//            Intent intent = new Intent(Main2Activity.this, Staff_profile.class);
-//            intent.putExtra("userID", userID);
-//            intent.putExtra("userName", userName);
-//            intent.putExtra("staffid", userID);
-//            intent.putExtra("staffname", userName);
-//            startActivity(intent);
         } else if (id == R.id.review) {
-
+            Intent intent = new Intent(Main2Activity.this, Maintain_ReviewActivity.class);
+            intent.putExtra("userID", userID);
+            intent.putExtra("userName", userName);
+            startActivity(intent);
         } else if (id == R.id.reserv) {
             Intent intent = new Intent(Main2Activity.this, OrderActivity.class);
             intent.putExtra("userID", userID);
