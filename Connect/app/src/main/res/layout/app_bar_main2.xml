@@ -28,8 +28,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:backgroundTint="@android:color/transparent"
-        app:rippleColor="@android:color/transparent"
-        app:srcCompat="@drawable/toparrow" />
+        android:visibility="gone"
+        app:backgroundTint="@android:color/background_light"
+        app:elevation="7dp"
+        app:srcCompat="@drawable/personinfo" />
 
 </android.support.design.widget.CoordinatorLayout>

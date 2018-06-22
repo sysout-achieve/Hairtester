@@ -7,7 +7,7 @@
     android:gravity="center_vertical">
 
     <ImageButton
-        android:id="@+id/btnBack"
+        android:id="@+id/btnBack_order"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_alignParentLeft="true"
@@ -23,18 +23,11 @@
         android:layout_marginLeft="50dp"
         android:layout_toRightOf="@id/btnBack_chat"
         android:gravity="center_vertical"
-        android:text="내 정보 수정"
+        android:text="주문 내역"
+        android:textAlignment="center"
+        android:paddingRight="30dp"
         android:textColor="#fff"
         android:textSize="20sp" />
 
-    <ImageButton
-        android:id="@+id/btnSave"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="13dp"
-        android:background="@drawable/save"
-        android:gravity="center_vertical" />
 </RelativeLayout>
 

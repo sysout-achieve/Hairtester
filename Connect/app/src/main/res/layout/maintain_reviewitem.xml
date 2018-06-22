@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/cardview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="3dp"
+        android:layout_marginBottom="8dp"
+        card:cardBackgroundColor="@color/cardview_light_background"
+        card:cardCornerRadius="10dp"
+        card:cardElevation="3dp">
+
+        <LinearLayout
+            android:id="@+id/maintain_orderlayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/maintain_orderlayout_sub"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="6"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/maintain_title_txt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:fontFamily="casual"
+                    android:padding="2dp"
+                    android:text="주문명"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/textView27"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="가격" />
+
+                    <TextView
+                        android:id="@+id/maintain_price_txt"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:fontFamily="monospace"
+                        android:text="TextView"
+                        android:textColor="@android:color/background_dark" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/textView29"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="주문날짜" />
+
+                    <TextView
+                        android:id="@+id/maintain_date_txt"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:fontFamily="monospace"
+                        android:text="TextView"
+                        android:textColor="@android:color/background_dark" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/textView31"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="판매자" />
+
+                    <TextView
+                        android:id="@+id/maintain_seller_txt"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:fontFamily="monospace"
+                        android:text="TextView"
+                        android:textColor="@android:color/background_dark" />
+
+                    <TextView
+                        android:id="@+id/textView33"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="주문 정보" />
+
+                    <TextView
+                        android:id="@+id/maintain_serviceable_txt"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:fontFamily="monospace"
+                        android:text="TextView"
+                        android:textColor="@android:color/background_dark" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:background="@android:color/holo_red_dark"
+                android:elevation="@dimen/cardview_default_elevation"
+                android:text="리뷰"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textColor="@color/cardview_light_background"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+
+    </android.support.v7.widget.CardView>
+</RelativeLayout>

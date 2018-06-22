@@ -7,9 +7,9 @@
     android:gravity="center_vertical">
 
     <ImageButton
-        android:id="@+id/btnBack"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:id="@+id/btnBack_chat"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="15dp"
@@ -17,24 +17,24 @@
         android:gravity="center_vertical" />
 
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/whochat"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginLeft="50dp"
         android:layout_toRightOf="@id/btnBack_chat"
         android:gravity="center_vertical"
-        android:text="내 정보 수정"
+        android:text="whochat"
         android:textColor="#fff"
-        android:textSize="20sp" />
+        android:textSize="18dp" />
 
     <ImageButton
-        android:id="@+id/btnSave"
+        android:id="@+id/btnpicture"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_alignParentRight="true"
-        android:layout_marginRight="10dp"
+        android:layout_marginRight="20dp"
         android:layout_marginTop="13dp"
-        android:background="@drawable/save"
+        android:background="@drawable/picture"
         android:gravity="center_vertical" />
 </RelativeLayout>
 
