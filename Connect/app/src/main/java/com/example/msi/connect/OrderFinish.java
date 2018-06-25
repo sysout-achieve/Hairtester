@@ -15,12 +15,12 @@ public class OrderFinish extends StringRequest {
     final static private String URL = "http://13.125.234.222/new/orderfinish.php";
     private Map<String, String> parameters;
 
-    public OrderFinish(String userID, int num, Response.Listener<String> listener){
+    public OrderFinish(String userID, int num, String income, Response.Listener<String> listener){
         super(Method.POST, URL, listener, null);
         parameters = new HashMap<>();
         parameters.put("userID", userID);
         parameters.put("num", num+"");
-
+        parameters.put("income", income);
     }
 
     @Override

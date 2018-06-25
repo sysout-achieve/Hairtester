@@ -1,17 +1,11 @@
 package com.example.msi.connect;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.ClipData;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.design.internal.NavigationMenuItemView;
+
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -26,7 +20,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -44,28 +37,27 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class Main2Activity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    static MenuItem visitagain;
     FloatingActionButton fab;
     String userID, userName, userAge, profile_img_string;
+    String staffid1, staffid2;
     ProgressDialog mDialog;
     TextView rank, style;
     SharedPreferences loginID;
     private String ip = "http://13.125.234.222:3000";
     private static Socket mSocket;
-    ProgressBar mainprogressBar;
     ScrollView mainView;
     TextView hotid1, hotid2, hotheart1, hotheart2;
     TextView all_style, all_designer;
     TextView designerid1, designerid2;
     ImageView hotimg1, hotimg2, designerimg1, designerimg2;
-
+    LinearLayout showroom_main1, showroom_main2, profile_main1, profile_main2;
+    private ArrayList<ShowroomItem> showroomItems;
+    ImageConvert imageConvert = new ImageConvert();
 
     {
         try {
@@ -126,7 +118,7 @@ public class Main2Activity extends AppCompatActivity
         setContentView(R.layout.activity_main2);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
-        mainprogressBar = (ProgressBar) findViewById(R.id.mainprogressBar);
+
         mainView = (ScrollView) findViewById(R.id.mainView);
 
         setSupportActionBar(toolbar);
@@ -146,6 +138,11 @@ public class Main2Activity extends AppCompatActivity
         hotimg2 = (ImageView) findViewById(R.id.hotimg2);
         designerimg1 = (ImageView) findViewById(R.id.designerimg1);
         designerimg2 = (ImageView) findViewById(R.id.designerimg2);
+        showroom_main1 = (LinearLayout) findViewById(R.id.showroom_main1);
+        showroom_main2 = (LinearLayout) findViewById(R.id.showroom_main2);
+        profile_main1 = (LinearLayout) findViewById(R.id.profile_main1);
+        profile_main2 = (LinearLayout) findViewById(R.id.profile_main2);
+        showroomItems = new ArrayList<>();
 
         //로그인 정보 intent로 get.
         Intent intent = getIntent();
@@ -153,7 +150,8 @@ public class Main2Activity extends AppCompatActivity
         userName = intent.getStringExtra("userName");
         userAge = intent.getStringExtra("userAge") + "";
         profile_img_string = intent.getStringExtra("profile_img_string");
-
+        rank = (TextView) findViewById(R.id.rank);
+        style = (TextView) findViewById(R.id.style);
 
         if (userID != null) {
             loginIDedit.putString("loginID", userID).commit();
@@ -164,14 +162,95 @@ public class Main2Activity extends AppCompatActivity
             userID = loginID.getString("loginID", "null");
             userName = loginID.getString("loginName", "null");
             userAge = loginID.getString("loginAge", "null");
-//            profile_img_string = loginID.getString("loginProfile","default");
+            profile_img_string = loginID.getString("loginProfile", null);
         }
-
-        rank = (TextView) findViewById(R.id.rank);
-        style = (TextView) findViewById(R.id.style);
 
         mSocket.on("message", handleInmcoming_chatlist);
         mSocket.emit("connect_room", userID);
+
+        showroom_main1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Main2Activity.this, ShowroomActivity.class);
+                String text = showroomItems.get(0).gettext();
+//                String img = showroomItems.get(0).getimg();
+                String date = showroomItems.get(0).getdate();
+                int heart = showroomItems.get(0).getheart();
+                int num = showroomItems.get(0).getnum();
+                intent.putExtra("text", text);
+//                intent.putExtra("img", img);
+                intent.putExtra("date", date);
+                intent.putExtra("heart", heart);
+                intent.putExtra("num", num);
+                intent.putExtra("staffid", staffid1);
+                intent.putExtra("userID", userID);
+                startActivity(intent);
+            }
+        });
+
+        showroom_main2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Main2Activity.this, ShowroomActivity.class);
+                String text = showroomItems.get(1).gettext();
+                String img = showroomItems.get(1).getimg();
+                String date = showroomItems.get(1).getdate();
+                int heart = showroomItems.get(1).getheart();
+                int num = showroomItems.get(1).getnum();
+                intent.putExtra("text", text);
+                intent.putExtra("img", img);
+                intent.putExtra("date", date);
+                intent.putExtra("heart", heart);
+                intent.putExtra("num", num);
+                intent.putExtra("staffid", staffid2);
+                intent.putExtra("userID", userID);
+                startActivity(intent);
+            }
+        });
+
+        profile_main1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Main2Activity.this, Staff_profile.class);
+                String staffid_main1 = designerid1.getText().toString();
+                intent.putExtra("staffid", staffid_main1);
+                intent.putExtra("userID",userID);
+                intent.putExtra("userName", userName);
+                startActivity(intent);
+            }
+        });
+
+        profile_main2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Main2Activity.this, Staff_profile.class);
+                String staffid_main2 = designerid2.getText().toString();
+                intent.putExtra("staffid", staffid_main2);
+                intent.putExtra("userID",userID);
+                intent.putExtra("userName", userName);
+                startActivity(intent);
+            }
+        });
+
+        all_designer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Main2Activity.this, Find_staffActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("userName", userName);
+                startActivity(intent);
+            }
+        });
+
+        all_style.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Main2Activity.this, StylelineActivity.class);
+                intent.putExtra("userID", userID);
+                intent.putExtra("userName", userName);
+                startActivity(intent);
+            }
+        });
 
         rank.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -225,6 +304,8 @@ public class Main2Activity extends AppCompatActivity
         RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
         queue.add(staffCallRequest);
 
+        requestMainAct();
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -249,6 +330,48 @@ public class Main2Activity extends AppCompatActivity
         });
     }
 
+    /*서버에서 데이터 받는 메소드 */
+    private void requestMainAct(){
+        //메인 액티비티에 HOT스타일과 이 달의 디자이너 정보 받기
+        Response.Listener<String> responseListener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonResponse = new JSONObject(response);
+
+                    showroomItems.add(new ShowroomItem(jsonResponse.getString("hotitemtext1"),jsonResponse.getString("hotitemimg1"),jsonResponse.getString("hotitemdate1")
+                            ,jsonResponse.getInt("hotitemheart1"),jsonResponse.getInt("hotitemnum1")));
+                    showroomItems.add(new ShowroomItem(jsonResponse.getString("hotitemtext2"),jsonResponse.getString("hotitemimg2"),jsonResponse.getString("hotitemdate2")
+                            ,jsonResponse.getInt("hotitemheart2"),jsonResponse.getInt("hotitemnum2")));
+                    staffid1 = jsonResponse.getString("hotitemid1");
+                    staffid2 = jsonResponse.getString("hotitemid2");
+                    hotid1.setText(staffid1);
+                    hotid2.setText(staffid2);
+                    hotheart1.setText(jsonResponse.getString("hotitemheart1")+"");
+                    hotheart2.setText(jsonResponse.getString("hotitemheart2")+"");
+                    hotimg1.setImageBitmap(imageConvert.StringToBitMap(jsonResponse.getString("hotitemimg1")));
+                    hotimg2.setImageBitmap(imageConvert.StringToBitMap(jsonResponse.getString("hotitemimg2")));
+
+                    designerid1.setText(jsonResponse.getString("profile_id"));
+                    designerid2.setText(jsonResponse.getString("profile_id2"));
+                    if (!jsonResponse.getString("profile_img").equals("default")){
+                        Picasso.with(Main2Activity.this).load(jsonResponse.getString("profile_img")).into(designerimg1);
+                    }
+                    if (!jsonResponse.getString("profile_img2").equals("default")){
+                        Picasso.with(Main2Activity.this).load(jsonResponse.getString("profile_img2")).into(designerimg2);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        MainRequest mainRequest = new MainRequest(responseListener);
+        RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
+        queue.add(mainRequest);
+    }
+    /*fin.*/
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -263,7 +386,6 @@ public class Main2Activity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main2, menu);
-//        menu.getItem(R.id.visitagain).setEnabled(true);
         ImageView profile_img = (ImageView) findViewById(R.id.profile_img);
         TextView txt_id = (TextView) findViewById(R.id.id_txt);
         if (profile_img_string != null) {
@@ -281,19 +403,12 @@ public class Main2Activity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -335,7 +450,6 @@ public class Main2Activity extends AppCompatActivity
                             intent.putExtra("checked_designer", checked_designer);
                             intent.putExtra("userinfo", true);
                             startActivity(intent);
-
                         } else {
                             Intent intent = new Intent(Main2Activity.this, ProfileActivity.class);
                             intent.putExtra("userID", userID);
@@ -344,7 +458,6 @@ public class Main2Activity extends AppCompatActivity
                             intent.putExtra("userAge", userAge);
                             intent.putExtra("userinfo", false);
                             startActivity(intent);
-
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
