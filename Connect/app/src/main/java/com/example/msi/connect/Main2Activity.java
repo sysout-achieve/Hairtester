@@ -66,50 +66,16 @@ public class Main2Activity extends AppCompatActivity
 
         }
     }
-    // 채팅이 왔을 때 인식함
-
-    /* 삭제 가능 발표 후 검토 예정*/
-    private Emitter.Listener handleInmcoming_chatlist = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String message;
-                    String sendname;
-                    String sendid;
-                    try {
-                        message = data.getString("message").toString();
-                        sendid = data.getString("sendid").toString();
-                        sendname = data.getString("sendname").toString();
-                    } catch (JSONException e) {
-                        return;
-                    }
-                    receiveMessage_chatroom(sendid, sendname, message, 1, userID);
-                }
-            });
-        }
-    };
-
-    //채팅이 왔을 때 데이터 베이스로 저장
-    private void receiveMessage_chatroom(String sendid, String sendName, String message, int readchk, String userID) {
-        Response.Listener<String> responseListener = new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-
-            }
-        };
-        AddchatlistRequest addchatlistRequest = new AddchatlistRequest(sendid, sendName, message, readchk, userID, responseListener);
-        RequestQueue queue = Volley.newRequestQueue(Main2Activity.this);
-        queue.add(addchatlistRequest);
-    }
-    /*-------------발표 후 검토 fin.--------------*/
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mSocket.disconnect();
+    }
+
+    @Override
+    protected void onResume() {
+        requestMainAct();
+        super.onResume();
     }
 
     @Override
@@ -164,8 +130,6 @@ public class Main2Activity extends AppCompatActivity
             userAge = loginID.getString("loginAge", "null");
             profile_img_string = loginID.getString("loginProfile", null);
         }
-
-        mSocket.on("message", handleInmcoming_chatlist);
         mSocket.emit("connect_room", userID);
 
         showroom_main1.setOnClickListener(new View.OnClickListener() {
@@ -173,12 +137,10 @@ public class Main2Activity extends AppCompatActivity
             public void onClick(View v) {
                 Intent intent = new Intent(Main2Activity.this, ShowroomActivity.class);
                 String text = showroomItems.get(0).gettext();
-//                String img = showroomItems.get(0).getimg();
                 String date = showroomItems.get(0).getdate();
                 int heart = showroomItems.get(0).getheart();
                 int num = showroomItems.get(0).getnum();
                 intent.putExtra("text", text);
-//                intent.putExtra("img", img);
                 intent.putExtra("date", date);
                 intent.putExtra("heart", heart);
                 intent.putExtra("num", num);
@@ -193,12 +155,10 @@ public class Main2Activity extends AppCompatActivity
             public void onClick(View v) {
                 Intent intent = new Intent(Main2Activity.this, ShowroomActivity.class);
                 String text = showroomItems.get(1).gettext();
-                String img = showroomItems.get(1).getimg();
                 String date = showroomItems.get(1).getdate();
                 int heart = showroomItems.get(1).getheart();
                 int num = showroomItems.get(1).getnum();
                 intent.putExtra("text", text);
-                intent.putExtra("img", img);
                 intent.putExtra("date", date);
                 intent.putExtra("heart", heart);
                 intent.putExtra("num", num);
