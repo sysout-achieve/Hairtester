@@ -1,4 +1,5 @@
-Application : HairThere
+
+<h3>Application : HairThere</h3>
 
 서비스 설명 : 저렴한 헤어 서비스를 받도록 헤어샵 스텝과 고객을 연결해주는 서비스
 
