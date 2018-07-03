@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+        <string-array name="woman">
+            <item >숏(여)</item>
+            <item >단발(여)</item>
+            <item >미디엄(여)</item>
+            <item >롱(여)</item>
+        </string-array>
+
+</resources>

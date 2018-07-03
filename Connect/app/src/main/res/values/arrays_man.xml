@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+        <string-array name="man">
+            <item >숏(남)</item>
+            <item >미디엄(남)</item>
+            <item >롱(남)</item>
+
+        </string-array>
+
+</resources>
