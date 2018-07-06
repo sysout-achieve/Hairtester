@@ -53,4 +53,4 @@
 
 [![Watch the video](https://raw.github.com/GabLeRoux/WebMole/master/ressources/WebMole_Youtube_Video.png)](https://youtu.be/fCtYRn-Uo5w)
 
-
+  {% include HTinformation.html id="fCtYRn-Uo5w" %}  
