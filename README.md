@@ -1,4 +1,3 @@
-
 <h3>Application : HairThere</h3>
 
 서비스 설명 : 저렴한 헤어 서비스를 받도록 헤어샵 스텝과 고객을 연결해주는 서비스
@@ -53,4 +52,3 @@
 
 [![Watch the video](https://raw.github.com/GabLeRoux/WebMole/master/ressources/WebMole_Youtube_Video.png)](https://youtu.be/fCtYRn-Uo5w)
 
-  {% include HTinformation.html id="fCtYRn-Uo5w" %}  
