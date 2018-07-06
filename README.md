@@ -50,7 +50,7 @@
 모델이 얼굴 공개를 원하지 않을 경우 얼굴 가리기 촬영으로 사진을 찍을 수 있습니다. 카메라에서 인식한 얼굴에 동그란 원을 이용하여, 얼굴만 가려주고 머리스타일만 보이는 상태로 촬영이 가능합니다.<br>
 
 
-<iframe width="640" height="360" src="https://youtu.be/fCtYRn-Uo5w" frameborder="0" gesture="media" allowfullscreen=""></iframe>
 
+[![Watch the video](https://raw.github.com/GabLeRoux/WebMole/master/ressources/WebMole_Youtube_Video.png)](https://youtu.be/fCtYRn-Uo5w)
 
 
